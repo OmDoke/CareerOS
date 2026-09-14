@@ -87,7 +87,7 @@ export default function AiAnalysisPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">AI Resume Analysis</h1>
             <p className="text-muted-foreground mt-2">
-              Deep insights and structured extraction powered by Gemini 2.5 Flash.
+              Deep insights and structured extraction powered by Gemini 3.6 Flash.
             </p>
           </div>
           <AnalyzeResumeButton force={true} />

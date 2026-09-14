@@ -24,21 +24,21 @@ export class AiAnalysisService {
       const prompt = getResumeAnalysisPrompt(resume.extractedText);
       const structuredData = await geminiProvider.generateJSON(prompt);
 
-      // Save structured data
+      // Save structured data — keys must match the prompt schema exactly
       const updatedResume = await resumeRepository.update(userId, {
-        name: structuredData["Personal Information"]?.Name || null,
-        email: structuredData["Personal Information"]?.Email || null,
-        phone: structuredData["Personal Information"]?.Phone || null,
-        
-        skills: JSON.stringify(structuredData["Skills"] || {}),
-        experience: JSON.stringify(structuredData["Experience"] || []),
-        education: JSON.stringify(structuredData["Education"] || []),
-        projects: JSON.stringify(structuredData["Projects"] || []),
-        
-        aiSummary: structuredData["aiSummary"] || null,
-        strengths: JSON.stringify(structuredData["strengths"] || []),
-        weaknesses: JSON.stringify(structuredData["weaknesses"] || []),
-        suggestedSkills: JSON.stringify(structuredData["suggestedSkills"] || []),
+        name: structuredData.personalInfo?.name || null,
+        email: structuredData.personalInfo?.email || null,
+        phone: structuredData.personalInfo?.phone || null,
+
+        skills: JSON.stringify(structuredData.skills || []),
+        experience: JSON.stringify(structuredData.experience || []),
+        education: JSON.stringify(structuredData.education || []),
+        projects: JSON.stringify(structuredData.projects || []),
+
+        aiSummary: structuredData.aiSummary || null,
+        strengths: JSON.stringify(structuredData.strengths || []),
+        weaknesses: JSON.stringify(structuredData.weaknesses || []),
+        suggestedSkills: JSON.stringify(structuredData.suggestedSkills || []),
 
         status: "ANALYZED",
         analysisVersion: "1.0",
