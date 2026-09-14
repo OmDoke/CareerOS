@@ -62,11 +62,14 @@ export default function TodayPage() {
   const completedTasks = session.tasks?.filter((t: any) => t.status === "COMPLETED").length ?? 0;
   const totalTasks = session.tasks?.length ?? 0;
   const isCompleted = session.status === "COMPLETED";
+  const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
+  const remainingTasks = totalTasks - completedTasks;
+  const estimatedRemainingMins = remainingTasks * 15; // Assume 15 mins per task
 
   return (
-    <ProtectedLayout>
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="mb-6">
+    <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
           <h1 className="text-3xl font-bold tracking-tight">Today&apos;s Study Session</h1>
           <p className="text-muted-foreground mt-1">
             {new Date(session.sessionDate).toLocaleDateString("en-US", {
@@ -77,19 +80,37 @@ export default function TodayPage() {
             })}
           </p>
         </div>
-
-        <TodaySessionCard session={session} />
-
-        <SessionProgress completed={completedTasks} total={totalTasks} />
-
-        <StudyTaskList tasks={session.tasks ?? []} />
-
-        {!isCompleted && (
-          <div className="mt-8 flex justify-end">
-            <CompleteSessionButton sessionId={session.id} />
+        {!isCompleted && !allTasksDone && (
+          <div className="bg-secondary/50 text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium border shadow-sm">
+            ~{estimatedRemainingMins} mins remaining
           </div>
         )}
       </div>
-    </ProtectedLayout>
+
+      {(isCompleted || allTasksDone) ? (
+        <div className="flex flex-col items-center justify-center text-center p-12 border rounded-xl bg-card border-green-500/20 mb-8">
+          <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
+            <CalendarCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">You're all done for today!</h2>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            Great job completing your study session. Come back tomorrow for your next customized curriculum tasks.
+          </p>
+          <Link href="/dashboard">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
+      ) : (
+        <>
+          <TodaySessionCard session={session} />
+          <SessionProgress completed={completedTasks} total={totalTasks} />
+          <StudyTaskList tasks={session.tasks ?? []} />
+
+          <div className="mt-8 flex justify-end">
+            <CompleteSessionButton sessionId={session.id} />
+          </div>
+        </>
+      )}
+    </div>
   );
 }

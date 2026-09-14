@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "../store/auth.store";
 
+import { AppLayout } from "../components/layout/AppLayout";
+
 export const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -24,5 +26,5 @@ export const ProtectedLayout = ({ children }: { children: React.ReactNode }) => 
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  return <>{children}</>;
+  return <AppLayout>{children}</AppLayout>;
 };

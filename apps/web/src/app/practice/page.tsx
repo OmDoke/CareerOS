@@ -126,10 +126,10 @@ export default function PracticePage() {
             />
 
             {!questionData.options && (
-              <div className="bg-card border rounded-lg p-6">
-                <h3 className="font-medium mb-3">Your Answer</h3>
+              <div className="bg-card border rounded-xl p-6 shadow-sm">
+                <h3 className="font-medium mb-3 text-lg">Your Answer</h3>
                 <textarea 
-                  className="w-full min-h-[150px] p-3 rounded-md border bg-background resize-y"
+                  className="w-full min-h-[200px] p-4 rounded-lg border bg-background/50 focus:bg-background resize-y transition-colors focus:ring-2 focus:ring-primary focus:outline-none text-base"
                   placeholder="Type your answer or code here..."
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
@@ -137,31 +137,37 @@ export default function PracticePage() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-4">
-              <Button 
-                variant="outline" 
-                onClick={handleGetHint} 
-                disabled={getHint.isPending}
-              >
-                {getHint.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lightbulb className="h-4 w-4 mr-2" />}
-                Get Hint
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleGetExplanation}
-                disabled={getExplanation.isPending}
-              >
-                {getExplanation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
-                Explain Concept
-              </Button>
-              <div className="flex-1" />
-              <Button variant="secondary" onClick={handleSkip} disabled={skipQuestion.isPending}>
-                <SkipForward className="h-4 w-4 mr-2" />
-                Skip
-              </Button>
-              <Button onClick={() => alert("Submit Answer will be implemented in Phase 8")}>
-                Submit Answer
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mt-6 bg-card border rounded-xl p-4 shadow-sm">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  onClick={handleGetHint} 
+                  disabled={getHint.isPending}
+                  className="flex-1 sm:flex-none"
+                >
+                  {getHint.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lightbulb className="h-4 w-4 mr-2" />}
+                  Get Hint
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleGetExplanation}
+                  disabled={getExplanation.isPending}
+                  className="flex-1 sm:flex-none"
+                >
+                  {getExplanation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
+                  Explain Concept
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button variant="secondary" onClick={handleSkip} disabled={skipQuestion.isPending} className="flex-1 sm:flex-none">
+                  <SkipForward className="h-4 w-4 mr-2" />
+                  Skip
+                </Button>
+                <Button onClick={() => alert("Submit Answer will be implemented in Phase 8")} className="flex-1 sm:flex-none">
+                  Submit Answer
+                </Button>
+              </div>
             </div>
 
             {hint && (

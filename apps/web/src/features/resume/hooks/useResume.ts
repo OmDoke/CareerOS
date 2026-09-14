@@ -34,6 +34,7 @@ export const useDeleteResume = () => {
   return useMutation({
     mutationFn: resumeService.deleteResume,
     onSuccess: () => {
+      queryClient.setQueryData(["resume"], null);
       queryClient.invalidateQueries({ queryKey: ["resume"] });
     },
   });

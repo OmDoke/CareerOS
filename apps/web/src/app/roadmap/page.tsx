@@ -68,12 +68,20 @@ export default function RoadmapPage() {
           estimatedWeeks={roadmap.estimatedWeeks}
         />
 
-        <div className="mb-8">
-          <div className="flex justify-between text-sm mb-2 font-medium">
-            <span>Overall Progress</span>
-            <span>{Math.round(progressPercentage)}%</span>
+        <div className="mb-8 p-6 border rounded-xl bg-card shadow-sm flex flex-col sm:flex-row gap-6 items-center justify-between">
+          <div className="flex-1 w-full">
+            <div className="flex justify-between text-sm mb-2 font-medium">
+              <span>Overall Progress</span>
+              <span>{Math.round(progressPercentage)}%</span>
+            </div>
+            <ProgressBar progress={progressPercentage} className="h-3" />
           </div>
-          <ProgressBar progress={progressPercentage} className="h-3" />
+          <Link href="/today" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto">
+              Continue Learning
+              <Route className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
 
         <div className="space-y-6">

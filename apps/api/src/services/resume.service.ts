@@ -109,7 +109,7 @@ export class ResumeService {
   async deleteResume(userId: string) {
     const resume = await resumeRepository.findByUserId(userId);
     if (!resume) {
-      throw new NotFoundError("Resume not found");
+      return true;
     }
 
     const filePath = path.join(process.cwd(), "uploads", "resumes", resume.storedFileName);

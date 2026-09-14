@@ -111,6 +111,21 @@ export default function AiAnalysisPage() {
             <ProjectsCard data={resume.projects} />
           </div>
         </div>
+
+        <div className="mt-12 flex flex-col items-center justify-center p-8 border rounded-xl bg-card gap-4 text-center">
+          <h2 className="text-xl font-bold">Analysis Complete</h2>
+          <p className="text-muted-foreground max-w-md">
+            Your resume has been processed. The next step is to generate a custom curriculum based on these insights.
+          </p>
+          <div className="flex gap-4 flex-wrap justify-center mt-4">
+            <Link href="/dashboard">
+              <Button variant="outline">Go to Dashboard</Button>
+            </Link>
+            <Link href="/roadmap">
+              <Button variant="default">Generate Roadmap</Button>
+            </Link>
+          </div>
+        </div>
       </div>
     </ProtectedLayout>
   );

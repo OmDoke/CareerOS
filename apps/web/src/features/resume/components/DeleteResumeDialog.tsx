@@ -14,14 +14,20 @@ interface Props {
   onClose: () => void;
 }
 
+import { toast } from "sonner";
+
 export function DeleteResumeDialog({ isOpen, onClose }: Props) {
   const deleteResume = useDeleteResume();
 
   const handleDelete = () => {
     deleteResume.mutate(undefined, {
       onSuccess: () => {
+        toast.success("Resume deleted successfully");
         onClose();
       },
+      onError: () => {
+        toast.error("Failed to delete resume");
+      }
     });
   };
 
