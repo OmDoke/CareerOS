@@ -35,20 +35,28 @@ export default function AiAnalysisPage() {
 
   // Handle case where user hasn't uploaded a resume, or it's not analyzed yet
   if (error || !resume || resume.status !== "ANALYZED") {
+    const hasResume = !!resume;
+    const isParsed = hasResume && (resume.status === "PARSED" || resume.status === "UPLOADED");
+    const notUploaded = !hasResume;
+
     return (
       <ProtectedLayout>
         <div className="container max-w-4xl mx-auto py-8 px-4">
           <div className="flex flex-col items-center justify-center text-center p-12 border rounded-xl bg-card">
             <Bot className="h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">No AI Analysis Found</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              {notUploaded ? "No Resume Found" : "Resume Not Analyzed Yet"}
+            </h2>
             <p className="text-muted-foreground mb-6 max-w-md">
-              You need to upload your resume and run the AI analysis to unlock personalized insights and structured data.
+              {notUploaded
+                ? "Upload your resume first, then run the AI analysis to unlock personalized insights."
+                : "Click 'Analyze with AI' to extract structured data and get personalized insights from your resume."}
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap justify-center">
               <Link href="/resume">
                 <Button variant="outline">Go to Resume</Button>
               </Link>
-              {resume && resume.extractedText && (
+              {(isParsed || hasResume) && (
                 <AnalyzeResumeButton />
               )}
             </div>

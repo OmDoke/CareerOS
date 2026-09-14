@@ -1,7 +1,7 @@
 import { getResumeAnalysisPrompt } from "@career-os/prompts";
 import { geminiProvider } from "../providers/gemini.provider";
 import { resumeRepository } from "../repositories/resume.repository";
-import { NotFoundError, BadRequestError } from "../errors/custom-errors";
+import { NotFoundError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
 
 export class AiAnalysisService {
@@ -57,11 +57,8 @@ export class AiAnalysisService {
     if (!resume) {
       throw new NotFoundError("Resume not found");
     }
-    
-    if (resume.status !== "ANALYZED") {
-      throw new BadRequestError("Resume has not been analyzed yet.");
-    }
-
+    // Return the resume at any status — the frontend shows the Analyze button
+    // when status !== "ANALYZED", and the full report when status === "ANALYZED".
     return resume;
   }
 }
