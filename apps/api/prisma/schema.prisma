@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  password        String
+  firstName       String?
+  lastName        String?
+  avatar          String?
+  role            String   @default("USER")
+  isEmailVerified Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  resume          Resume?
+}
+
+model Resume {
+  id               String   @id @default(cuid())
+
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  originalFileName String
+  storedFileName   String
+
+  mimeType         String
+  fileSize         Int
+
+  pageCount        Int?
+
+  extractedText    String?
+
+  name             String?
+  email            String?
+  phone            String?
+
+  skills           String?
+  education        String?
+  experience       String?
+  projects         String?
+
+  aiSummary        String?
+  strengths        String?
+  weaknesses       String?
+  suggestedSkills  String?
+  analysisVersion  String?
+  analyzedAt       DateTime?
+
+  status           String   @default("UPLOADED")
+
+  parseVersion     String?
+  parseStatus      String?
+  parseError       String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
