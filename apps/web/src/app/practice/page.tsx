@@ -13,6 +13,9 @@ import { QuestionCard } from "../../features/practice/components/QuestionCard";
 import { Button } from "../../components/ui/button";
 import { Loader2, AlertCircle, Lightbulb, SkipForward, BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { QuestionSkeleton } from "@/components/shared/LoadingSkeleton";
 
 export default function PracticePage() {
   const searchParams = useSearchParams();
@@ -39,11 +42,27 @@ export default function PracticePage() {
   if (!sessionId || !taskId) {
     return (
       <ProtectedLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-          <h2 className="text-xl font-semibold">Missing Context</h2>
-          <p className="text-muted-foreground mt-2 mb-4">Please start practice from today's study session.</p>
-          <Button onClick={() => router.push("/today")}>Go to Today's Plan</Button>
+        <div className="animate-in fade-in duration-500">
+          <PageHeader 
+            title="Interview Practice"
+            description="Master your skills with AI-generated dynamic questions."
+            breadcrumbItems={[{ label: "Practice" }]}
+          />
+          <div className="max-w-2xl mx-auto mt-12">
+            <EmptyState
+              icon={AlertCircle}
+              title="No Topic Selected"
+              description="To start practicing, please select a specific topic from your daily study session."
+              primaryAction={{
+                label: "Go to Today's Plan",
+                onClick: () => router.push("/today")
+              }}
+              secondaryAction={{
+                label: "Back to Dashboard",
+                href: "/dashboard"
+              }}
+            />
+          </div>
         </div>
       </ProtectedLayout>
     );
@@ -92,14 +111,26 @@ export default function PracticePage() {
   if (!questionData && !generateQuestion.isPending) {
     return (
       <ProtectedLayout>
-        <div className="container max-w-4xl mx-auto py-12 px-4 flex flex-col items-center">
-          <h1 className="text-3xl font-bold mb-6">Ready to Practice?</h1>
-          <p className="text-muted-foreground mb-8 text-center max-w-lg">
-            Our AI will generate a dynamic interview question tailored to your current topic, target role, and past performance.
-          </p>
-          <Button size="lg" onClick={handleNextQuestion}>
-            Generate First Question
-          </Button>
+        <div className="animate-in fade-in duration-500">
+          <PageHeader 
+            title="Interview Practice"
+            description="Dynamic AI questions tailored to your current topic."
+            breadcrumbItems={[
+              { label: "Today", href: "/today" },
+              { label: "Practice" }
+            ]}
+          />
+          <div className="max-w-2xl mx-auto mt-12">
+            <EmptyState
+              icon={Lightbulb}
+              title="Ready to Practice?"
+              description="Our AI will generate a dynamic interview question tailored to your current topic, target role, and past performance."
+              primaryAction={{
+                label: "Generate First Question",
+                onClick: handleNextQuestion
+              }}
+            />
+          </div>
         </div>
       </ProtectedLayout>
     );
@@ -109,10 +140,7 @@ export default function PracticePage() {
     <ProtectedLayout>
       <div className="container max-w-4xl mx-auto py-8 px-4">
         {generateQuestion.isPending ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-muted-foreground">AI is crafting your question...</p>
-          </div>
+          <QuestionSkeleton />
         ) : questionData ? (
           <div className="space-y-6">
             <QuestionCard 

@@ -1,3 +1,5 @@
+import { CenteredSpinner } from "@/components/shared/LoadingSkeleton";
+
 export default function Loading() {
-  return <div>Loading...</div>;
+  return <CenteredSpinner />;
 }

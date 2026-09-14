@@ -20,7 +20,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/today");
+      router.replace("/dashboard");
     }
   }, [isAuthenticated, router]);
 

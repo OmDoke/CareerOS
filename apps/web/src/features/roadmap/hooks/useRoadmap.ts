@@ -12,7 +12,7 @@ export function useRoadmap() {
   });
 }
 
-export function useGenerateRoadmap() {
+export function useGenerateRoadmap(options?: { onSuccess?: () => void }) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -22,6 +22,9 @@ export function useGenerateRoadmap() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roadmap"] });
+      if (options?.onSuccess) {
+        options.onSuccess();
+      }
     },
   });
 }

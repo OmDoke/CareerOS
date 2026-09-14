@@ -8,6 +8,7 @@ interface User {
   lastName: string | null;
   avatar: string | null;
   role: string;
+  currentRoadmapId?: string;
 }
 
 interface AuthState {

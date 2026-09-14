@@ -6,9 +6,10 @@ import { ResumeUploadCard } from "../../features/resume/components/ResumeUploadC
 import { ResumePreviewCard } from "../../features/resume/components/ResumePreviewCard";
 import { ResumeActions } from "../../features/resume/components/ResumeActions";
 import { DeleteResumeDialog } from "../../features/resume/components/DeleteResumeDialog";
-import { Loader2 } from "lucide-react";
-
 import { ProtectedLayout } from "../../layouts/ProtectedLayout";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
+import * as motion from "framer-motion/client";
 
 export default function ResumePage() {
   const { data: resume, isLoading } = useResume();
@@ -17,48 +18,51 @@ export default function ResumePage() {
   if (isLoading) {
     return (
       <ProtectedLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading your resume...</p>
-        </div>
+        <SpinnerSkeleton />
       </ProtectedLayout>
     );
   }
 
-  // Handle case where user has no resume or fetch failed with 404
   const hasResume = !!resume;
 
   return (
     <ProtectedLayout>
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Resume Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Upload and manage your resume to personalize your interview preparation.
-        </p>
-      </div>
+      <div className="animate-in fade-in duration-500">
+        <PageHeader 
+          title="Resume Management"
+          description="Upload and manage your resume to personalize your interview preparation."
+          breadcrumbItems={[{ label: "Resume" }]}
+        />
 
-      {!hasResume ? (
-        <div className="bg-card border rounded-lg p-8">
-          <ResumeUploadCard />
-        </div>
-      ) : (
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Active Resume</h2>
-            <ResumeActions resume={resume} onDelete={() => setIsDeleteDialogOpen(true)} />
-          </section>
+        {!hasResume ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-2xl mx-auto mt-12"
+          >
+            <ResumeUploadCard />
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Active Resume</h2>
+              <ResumeActions resume={resume} onDelete={() => setIsDeleteDialogOpen(true)} />
+            </section>
 
-          <section>
-            <ResumePreviewCard resume={resume} />
-          </section>
+            <section>
+              <ResumePreviewCard resume={resume} />
+            </section>
 
-          <DeleteResumeDialog 
-            isOpen={isDeleteDialogOpen} 
-            onClose={() => setIsDeleteDialogOpen(false)} 
-          />
-        </div>
-      )}
+            <DeleteResumeDialog 
+              isOpen={isDeleteDialogOpen} 
+              onClose={() => setIsDeleteDialogOpen(false)} 
+            />
+          </motion.div>
+        )}
       </div>
     </ProtectedLayout>
   );

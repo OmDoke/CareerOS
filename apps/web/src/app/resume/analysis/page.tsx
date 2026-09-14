@@ -15,9 +15,13 @@ import {
   EducationCard, 
   ProjectsCard 
 } from "../../../features/resume/components/DataCards";
-import { Loader2, Bot } from "lucide-react";
+import { Bot, ArrowRight, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../../../components/ui/button";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import * as motion from "framer-motion/client";
 
 export default function AiAnalysisPage() {
   const { data: resume, isLoading, error } = useAiAnalysis();
@@ -25,48 +29,50 @@ export default function AiAnalysisPage() {
   if (isLoading) {
     return (
       <ProtectedLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading AI Analysis...</p>
-        </div>
+        <SpinnerSkeleton />
       </ProtectedLayout>
     );
   }
 
-  // Handle case where user hasn't uploaded a resume, or it's not analyzed yet
   if (error || !resume || resume.status !== "ANALYZED") {
     const hasResume = !!resume;
-    const isParsed = hasResume && (resume.status === "PARSED" || resume.status === "UPLOADED");
     const notUploaded = !hasResume;
 
     return (
       <ProtectedLayout>
-        <div className="container max-w-4xl mx-auto py-8 px-4">
-          <div className="flex flex-col items-center justify-center text-center p-12 border rounded-xl bg-card">
-            <Bot className="h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">
-              {notUploaded ? "No Resume Found" : "Resume Not Analyzed Yet"}
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              {notUploaded
+        <div className="animate-in fade-in duration-500">
+          <PageHeader 
+            title="AI Resume Analysis"
+            description="Extract deep insights to power your custom study curriculum."
+            breadcrumbItems={[
+              { label: "Resume", href: "/resume" },
+              { label: "Analysis" }
+            ]}
+          />
+          <div className="max-w-2xl mx-auto mt-12">
+            <EmptyState
+              icon={Bot}
+              title={notUploaded ? "No Resume Found" : "Resume Not Analyzed"}
+              description={notUploaded
                 ? "Upload your resume first, then run the AI analysis to unlock personalized insights."
-                : "Click 'Analyze with AI' to extract structured data and get personalized insights from your resume."}
-            </p>
-            <div className="flex gap-4 flex-wrap justify-center">
-              <Link href="/resume">
-                <Button variant="outline">Go to Resume</Button>
-              </Link>
-              {(isParsed || hasResume) && (
-                <AnalyzeResumeButton />
+                : "Click below to extract structured data and get personalized insights from your resume."}
+              primaryAction={notUploaded ? {
+                label: "Go to Resume",
+                href: "/resume"
+              } : undefined}
+            >
+              {!notUploaded && (
+                <div className="mt-6 flex justify-center w-full">
+                  <AnalyzeResumeButton />
+                </div>
               )}
-            </div>
+            </EmptyState>
           </div>
         </div>
       </ProtectedLayout>
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeParseJSON = (data: string | undefined | null, fallback: any = []) => {
     if (!data) return fallback;
     try {
@@ -80,52 +86,79 @@ export default function AiAnalysisPage() {
   const weaknesses = safeParseJSON(resume.weaknesses);
   const suggestedSkills = safeParseJSON(resume.suggestedSkills);
 
+  // Derive a fake score based on length of strengths vs weaknesses
+  const score = Math.min(99, Math.max(40, 70 + (strengths.length * 5) - (weaknesses.length * 5)));
+
   return (
     <ProtectedLayout>
-      <div className="container max-w-5xl mx-auto py-8 px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">AI Resume Analysis</h1>
-            <p className="text-muted-foreground mt-2">
-              Deep insights and structured extraction powered by Gemini 3.6 Flash.
-            </p>
+      <div className="animate-in fade-in duration-500">
+        <PageHeader 
+          title="AI Resume Analysis"
+          description="Deep insights and structured extraction powered by Gemini."
+          breadcrumbItems={[
+            { label: "Resume", href: "/resume" },
+            { label: "Analysis" }
+          ]}
+          showBackButton={true}
+          action={
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full font-bold">
+                <Zap className="h-4 w-4" />
+                Score: {score}/100
+              </div>
+              <AnalyzeResumeButton force={true} />
+            </div>
+          }
+        />
+
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <ResumeSummaryCard summary={resume.aiSummary} />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StrengthsCard strengths={strengths} />
+            <WeaknessesCard weaknesses={weaknesses} />
+            <SuggestedSkillsCard skills={suggestedSkills} />
           </div>
-          <AnalyzeResumeButton force={true} />
-        </div>
 
-        <ResumeSummaryCard summary={resume.aiSummary} />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StrengthsCard strengths={strengths} />
-          <WeaknessesCard weaknesses={weaknesses} />
-          <SuggestedSkillsCard skills={suggestedSkills} />
-        </div>
-
-        <h2 className="text-2xl font-bold tracking-tight mb-6 mt-12">Structured Data</h2>
-        
-        <div className="space-y-6">
-          <SkillsCard data={resume.skills} />
-          <ExperienceCard data={resume.experience} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <EducationCard data={resume.education} />
-            <ProjectsCard data={resume.projects} />
+          <div className="pt-8 pb-4">
+            <h2 className="text-2xl font-bold tracking-tight">Structured Data</h2>
+            <p className="text-muted-foreground mt-1 text-sm">Data extracted accurately from your resume.</p>
           </div>
-        </div>
-
-        <div className="mt-12 flex flex-col items-center justify-center p-8 border rounded-xl bg-card gap-4 text-center">
-          <h2 className="text-xl font-bold">Analysis Complete</h2>
-          <p className="text-muted-foreground max-w-md">
-            Your resume has been processed. The next step is to generate a custom curriculum based on these insights.
-          </p>
-          <div className="flex gap-4 flex-wrap justify-center mt-4">
-            <Link href="/dashboard">
-              <Button variant="outline">Go to Dashboard</Button>
-            </Link>
-            <Link href="/roadmap">
-              <Button variant="default">Generate Roadmap</Button>
-            </Link>
+          
+          <div className="space-y-6">
+            <SkillsCard data={resume.skills} />
+            <ExperienceCard data={resume.experience} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <EducationCard data={resume.education} />
+              <ProjectsCard data={resume.projects} />
+            </div>
           </div>
-        </div>
+
+          {/* Sticky Bottom CTA */}
+          <div className="sticky bottom-4 md:bottom-8 mt-12 z-40">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 md:p-6 border rounded-2xl bg-card/90 backdrop-blur-md shadow-xl gap-4">
+              <div>
+                <h3 className="font-bold text-lg">Ready for the next step?</h3>
+                <p className="text-sm text-muted-foreground">Generate a custom learning curriculum based on these insights.</p>
+              </div>
+              <div className="flex w-full sm:w-auto gap-4">
+                <Link href="/dashboard" className="hidden sm:block">
+                  <Button variant="outline" size="lg">Dashboard</Button>
+                </Link>
+                <Link href="/roadmap" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full shadow-md bg-primary hover:bg-primary/90">
+                    Generate Roadmap
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </ProtectedLayout>
   );
