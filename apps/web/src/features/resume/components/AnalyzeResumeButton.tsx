@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "../../../components/ui/button";
 import { useAnalyzeResume } from "../hooks/useAiAnalysis";
 import { Loader2, Sparkles } from "lucide-react";

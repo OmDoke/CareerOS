@@ -8,6 +8,8 @@ import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import resumeRoutes from "./routes/resume.routes";
 import aiAnalysisRoutes from "./routes/ai-analysis.routes";
+import roadmapRoutes from "./routes/roadmap.routes";
+import studySessionRoutes from "./routes/study-session.routes";
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/resume", resumeRoutes);
 app.use("/api/v1/resume", aiAnalysisRoutes);
+app.use("/api/v1/roadmap", roadmapRoutes);
+app.use("/api/v1/study-session", studySessionRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

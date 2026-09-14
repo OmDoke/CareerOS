@@ -1,3 +1,5 @@
+"use client";
+
 import { ProtectedLayout } from "../../../layouts/ProtectedLayout";
 import { useAiAnalysis } from "../../../features/resume/hooks/useAiAnalysis";
 import { AnalyzeResumeButton } from "../../../features/resume/components/AnalyzeResumeButton";
