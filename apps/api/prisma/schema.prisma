@@ -24,6 +24,7 @@ model User {
   resume          Resume?
   roadmap         Roadmap?
   studySessions   StudySession[]
+  questionAttempts QuestionAttempt[]
 }
 
 model Resume {
@@ -108,6 +109,7 @@ model RoadmapTopic {
   estimatedMinutes Int
   status           String        @default("PENDING")
   studyTasks       StudyTask[]
+  questionAttempts QuestionAttempt[]
 }
 
 model StudySession {
@@ -126,6 +128,7 @@ model StudySession {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   tasks              StudyTask[]
+  questionAttempts   QuestionAttempt[]
 }
 
 model StudyTask {
@@ -138,4 +141,30 @@ model StudyTask {
   title            String
   estimatedMinutes Int
   status           String       @default("PENDING")
+  questionAttempts QuestionAttempt[]
+}
+
+model QuestionAttempt {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studySessionId   String
+  session          StudySession @relation(fields: [studySessionId], references: [id], onDelete: Cascade)
+  studyTaskId      String
+  task             StudyTask    @relation(fields: [studyTaskId], references: [id], onDelete: Cascade)
+  topicId          String
+  topic            RoadmapTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  question         String
+  difficulty       String       @default("Beginner")
+  userAnswer       String?
+  aiFeedback       String?
+  score            Int?
+  
+  status           String       @default("PENDING") // PENDING, SKIPPED, SUBMITTED
+  
+  startedAt        DateTime     @default(now())
+  submittedAt      DateTime?
+  
+  createdAt        DateTime     @default(now())
 }

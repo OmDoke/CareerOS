@@ -1,6 +1,7 @@
 "use client";
 
 import { Circle, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,6 +35,16 @@ export function StudyTaskList({ tasks }: Props) {
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   {task.topic.description}
                 </p>
+              )}
+              {task.status !== "COMPLETED" && (
+                <div className="mt-4">
+                  <Link 
+                    href={`/practice?sessionId=${task.sessionId}&taskId=${task.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    Start Practice
+                  </Link>
+                </div>
               )}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { getResumeAnalysisPrompt } from "@career-os/prompts";
 import { geminiProvider } from "../providers/gemini.provider";
 import { resumeRepository } from "../repositories/resume.repository";
-import { NotFoundError } from "../errors/custom-errors";
+import { NotFoundError, BadRequestError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
 
 export class AiAnalysisService {
