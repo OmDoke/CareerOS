@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { useRoadmap, useGenerateRoadmap } from "../../features/roadmap/hooks/useRoadmap";
 import { RoadmapHeader } from "../../features/roadmap/components/RoadmapHeader";
 import { ModuleCard } from "../../features/roadmap/components/ModuleCard";
@@ -29,9 +28,9 @@ export default function RoadmapPage() {
 
   if (isLoading) {
     return (
-      <ProtectedLayout>
+      <>
         <SpinnerSkeleton />
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -49,7 +48,7 @@ export default function RoadmapPage() {
 
   if (error || !roadmap) {
     return (
-      <ProtectedLayout>
+      <>
         <div className="animate-in fade-in duration-500">
           <PageHeader 
             title="Curriculum Roadmap"
@@ -110,7 +109,7 @@ export default function RoadmapPage() {
             </EmptyState>
           </div>
         </div>
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -122,7 +121,7 @@ export default function RoadmapPage() {
   const progressPercentage = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="animate-in fade-in duration-500">
         <PageHeader 
           title="Curriculum Roadmap"
@@ -166,6 +165,6 @@ export default function RoadmapPage() {
           ))}
         </div>
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

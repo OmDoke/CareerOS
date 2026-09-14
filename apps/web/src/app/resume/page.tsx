@@ -6,7 +6,6 @@ import { ResumeUploadCard } from "../../features/resume/components/ResumeUploadC
 import { ResumePreviewCard } from "../../features/resume/components/ResumePreviewCard";
 import { ResumeActions } from "../../features/resume/components/ResumeActions";
 import { DeleteResumeDialog } from "../../features/resume/components/DeleteResumeDialog";
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
 import * as motion from "framer-motion/client";
@@ -17,16 +16,16 @@ export default function ResumePage() {
 
   if (isLoading) {
     return (
-      <ProtectedLayout>
+      <>
         <SpinnerSkeleton />
-      </ProtectedLayout>
+      </>
     );
   }
 
   const hasResume = !!resume;
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="animate-in fade-in duration-500">
         <PageHeader 
           title="Resume Management"
@@ -64,6 +63,6 @@ export default function ResumePage() {
           </motion.div>
         )}
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

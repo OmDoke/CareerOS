@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedLayout } from "../../../layouts/ProtectedLayout";
 import { useAiAnalysis } from "../../../features/resume/hooks/useAiAnalysis";
 import { AnalyzeResumeButton } from "../../../features/resume/components/AnalyzeResumeButton";
 import { 
@@ -28,9 +27,9 @@ export default function AiAnalysisPage() {
 
   if (isLoading) {
     return (
-      <ProtectedLayout>
+      <>
         <SpinnerSkeleton />
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -39,7 +38,7 @@ export default function AiAnalysisPage() {
     const notUploaded = !hasResume;
 
     return (
-      <ProtectedLayout>
+      <>
         <div className="animate-in fade-in duration-500">
           <PageHeader 
             title="AI Resume Analysis"
@@ -69,7 +68,7 @@ export default function AiAnalysisPage() {
             </EmptyState>
           </div>
         </div>
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -90,7 +89,7 @@ export default function AiAnalysisPage() {
   const score = Math.min(99, Math.max(40, 70 + (strengths.length * 5) - (weaknesses.length * 5)));
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="animate-in fade-in duration-500">
         <PageHeader 
           title="AI Resume Analysis"
@@ -160,6 +159,6 @@ export default function AiAnalysisPage() {
           </div>
         </motion.div>
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

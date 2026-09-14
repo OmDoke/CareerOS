@@ -2,7 +2,6 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { 
   useGenerateQuestion, 
   useSkipQuestion, 
@@ -41,7 +40,7 @@ export default function PracticePage() {
 
   if (!sessionId || !taskId) {
     return (
-      <ProtectedLayout>
+      <>
         <div className="animate-in fade-in duration-500">
           <PageHeader 
             title="Interview Practice"
@@ -64,7 +63,7 @@ export default function PracticePage() {
             />
           </div>
         </div>
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -110,7 +109,7 @@ export default function PracticePage() {
   // Initial load state
   if (!questionData && !generateQuestion.isPending) {
     return (
-      <ProtectedLayout>
+      <>
         <div className="animate-in fade-in duration-500">
           <PageHeader 
             title="Interview Practice"
@@ -132,12 +131,12 @@ export default function PracticePage() {
             />
           </div>
         </div>
-      </ProtectedLayout>
+      </>
     );
   }
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="container max-w-4xl mx-auto py-8 px-4">
         {generateQuestion.isPending ? (
           <QuestionSkeleton />
@@ -224,6 +223,6 @@ export default function PracticePage() {
           </div>
         ) : null}
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

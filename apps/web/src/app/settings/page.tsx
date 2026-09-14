@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { useAuthStore } from "../../store/auth.store";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
@@ -33,7 +32,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="animate-in fade-in duration-500 space-y-8">
         <PageHeader 
           title="Settings"
@@ -204,6 +203,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { useTodaySession, useGenerateSession } from "../../features/study-session/hooks/useStudySession";
 import { TodaySessionCard } from "../../features/study-session/components/TodaySessionCard";
 import { StudyTaskList } from "../../features/study-session/components/StudyTaskList";
@@ -21,15 +20,15 @@ export default function TodayPage() {
 
   if (isLoading) {
     return (
-      <ProtectedLayout>
+      <>
         <SpinnerSkeleton />
-      </ProtectedLayout>
+      </>
     );
   }
 
   if (!session) {
     return (
-      <ProtectedLayout>
+      <>
         <div className="animate-in fade-in duration-500">
           <PageHeader 
             title="Today's Study Session"
@@ -65,7 +64,7 @@ export default function TodayPage() {
             </EmptyState>
           </div>
         </div>
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -78,7 +77,7 @@ export default function TodayPage() {
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="animate-in fade-in duration-500 space-y-8">
         <PageHeader 
           title="Today's Study Session"
@@ -135,6 +134,6 @@ export default function TodayPage() {
           </motion.div>
         )}
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

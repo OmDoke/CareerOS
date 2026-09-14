@@ -1,6 +1,5 @@
 "use client";
 
-import { ProtectedLayout } from "../../layouts/ProtectedLayout";
 import { useAuthStore } from "../../store/auth.store";
 import { useResume } from "../../features/resume/hooks/useResume";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
@@ -36,9 +35,9 @@ export default function DashboardPage() {
 
   if (isLoadingResume || isLoadingSession) {
     return (
-      <ProtectedLayout>
+      <>
         <SpinnerSkeleton />
-      </ProtectedLayout>
+      </>
     );
   }
 
@@ -52,7 +51,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <ProtectedLayout>
+    <>
       <div className="space-y-8 animate-in fade-in duration-500">
         <PageHeader 
           title={`Welcome back, ${user?.firstName || user?.email?.split('@')[0] || "User"}!`}
@@ -240,6 +239,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-    </ProtectedLayout>
+    </>
   );
 }

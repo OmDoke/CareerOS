@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { QueryProvider } from "../providers/query-provider";
 import { Toaster } from "../components/ui/sonner";
+import { RootLayoutWrapper } from "../layouts/RootLayoutWrapper";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -23,7 +24,9 @@ export default function RootLayout({
       <body className="antialiased dark:bg-zinc-950 dark:text-zinc-50 min-h-screen flex flex-col">
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            {children}
+            <RootLayoutWrapper>
+              {children}
+            </RootLayoutWrapper>
             <Toaster />
           </ThemeProvider>
         </QueryProvider>
