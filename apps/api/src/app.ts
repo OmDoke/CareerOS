@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware";
 import { logger } from "./utils/logger";
 import { prisma } from "./database";
+import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import resumeRoutes from "./routes/resume.routes";
@@ -13,8 +14,15 @@ import studySessionRoutes from "./routes/study-session.routes";
 
 const app = express();
 
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+app.use(cors({
+  origin: env.FRONTEND_URL,
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+}));
 app.use(express.json());
 
 app.use((req, res, next) => {

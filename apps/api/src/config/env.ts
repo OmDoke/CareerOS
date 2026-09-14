@@ -7,7 +7,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   JWT_SECRET: z.string().default("super_secret_jwt_key_career_os_dev"),
   JWT_EXPIRES_IN: z.string().default("7d"),
-  GEMINI_API_KEY: z.string().optional().default(""), // Optional for now so dev doesn't crash if not provided, but handled in provider
+  GEMINI_API_KEY: z.string().optional().default(""),
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
 });
 
 export const env = envSchema.parse(process.env);

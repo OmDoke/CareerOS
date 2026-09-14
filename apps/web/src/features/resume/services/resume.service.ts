@@ -4,12 +4,10 @@ export const resumeService = {
   async uploadResume(file: File) {
     const formData = new FormData();
     formData.append("resume", file);
-    
-    const res = await api.post("/resume/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+
+    // Do NOT set Content-Type manually — the browser must auto-generate it
+    // with the multipart boundary, otherwise multer cannot parse the body.
+    const res = await api.post("/resume/upload", formData);
     return res.data.data.resume;
   },
   async getResume() {

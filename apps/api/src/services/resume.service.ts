@@ -2,7 +2,9 @@ import { resumeRepository } from "../repositories/resume.repository";
 import { NotFoundError, BadRequestError } from "../errors/custom-errors";
 import fs from "fs";
 import path from "path";
-import pdfParse from "pdf-parse";
+// pdf-parse v2 exports a class-based API
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { PDFParse } = require("pdf-parse");
 import { z } from "zod";
 import { updateResumeSchema } from "../validators/update-resume.schema";
 
@@ -45,7 +47,6 @@ export class ResumeService {
     });
 
     // Parse PDF
-    const fileBuffer = fs.readFileSync(file.path);
     let extractedText = null;
     let pageCount = null;
     let parseStatus = "SUCCESS";
@@ -53,10 +54,11 @@ export class ResumeService {
     let finalStatus = "PARSED";
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = await (pdfParse as any)(fileBuffer);
-      extractedText = data.text;
-      pageCount = data.numrender;
+      // pdf-parse v2 wraps pdfjs-dist getDocument() — pass the file path as `url`
+      const parser = new PDFParse({ url: file.path });
+      const result = await parser.getText();
+      extractedText = result.pages.map((p: { text: string }) => p.text).join("\n");
+      pageCount = result.pages.length;
     } catch (err) {
       parseStatus = "ERROR";
       parseError = err instanceof Error ? err.message : "Unknown parsing error";

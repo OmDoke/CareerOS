@@ -26,7 +26,9 @@ export function ResumeActions({ resume, onDelete }: Props) {
           <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {format(new Date(resume.uploadDate), "MMM dd, yyyy")}
+              {resume.createdAt
+                ? format(new Date(resume.createdAt), "MMM dd, yyyy")
+                : "Unknown date"}
             </span>
             <span>{(resume.fileSize / 1024 / 1024).toFixed(2)} MB</span>
           </div>
