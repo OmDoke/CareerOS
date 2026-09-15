@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store/auth.store";
+import { toast } from "sonner";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1",
@@ -25,6 +26,10 @@ api.interceptors.response.use(
       msg?.toLowerCase().includes("key is invalid")
     ) {
       window.dispatchEvent(new CustomEvent("ai-provider-missing"));
+    } else if (msg) {
+      toast.error(msg, { id: msg });
+    } else if (error.message) {
+      toast.error(error.message, { id: error.message });
     }
     return Promise.reject(error);
   }
