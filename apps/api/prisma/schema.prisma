@@ -19,6 +19,12 @@ model User {
   avatar          String?
   role            String   @default("USER")
   isEmailVerified Boolean  @default(false)
+  
+  // Analytics & Tracking
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  lastStudyDate   DateTime?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   resume          Resume?
@@ -109,6 +115,11 @@ model RoadmapTopic {
   estimatedMinutes Int
   status           String        @default("PENDING")
   masteryPercentage Int          @default(0)
+  
+  // Spaced Repetition & Tracking
+  nextReviewDate   DateTime?
+  lastAttemptDate  DateTime?
+
   studyTasks       StudyTask[]
   questionAttempts QuestionAttempt[]
 }
@@ -177,6 +188,8 @@ model QuestionAttempt {
   optimizedAnswer  String?
   resources        String?
   followUpQuestions String?
+  hintCount        Int          @default(0)
+  skipCount        Int          @default(0)
   
   evaluationJson   String?
   evaluationModel  String?

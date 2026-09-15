@@ -5,6 +5,9 @@ import { EvaluationContext, EvaluationResult } from "../types/evaluation.types";
 import { mapEvaluationToDb } from "../utils/evaluation.mapper";
 import { AppError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
+import { masteryService } from "./mastery.service";
+import { reviewService } from "./review.service";
+import { analyticsService } from "./analytics.service";
 
 export class EvaluationService {
   async evaluateAnswer(userId: string, data: any) {
@@ -144,18 +147,23 @@ export class EvaluationService {
             });
           }
         }
-        
-        // Also update StudyTask if completed?
-        // Logic for task completion can go here if needed.
 
         return attempt;
       });
 
+      // After transaction completes, update mastery, scheduling, and analytics
+      const newMastery = await masteryService.updateTopicMastery(roadmapTopicId);
+      await reviewService.scheduleNextReview(roadmapTopicId, newMastery);
+      await analyticsService.updateStudyStreak(userId);
+
       return result;
 
-    } catch (error) {
-      logger.error({ err: error }, "Failed to evaluate answer");
-      throw new AppError("Failed to evaluate answer", 500);
+    } catch (error: any) {
+      logger.error({ err: error }, "Failed to evaluate answer details");
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError(error.message || "Failed to evaluate answer", 500);
     }
   }
 

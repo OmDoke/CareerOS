@@ -3,7 +3,7 @@
 import { useAuthStore } from "../../store/auth.store";
 import { useResume } from "../../features/resume/hooks/useResume";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
-import { useQuestionStatistics } from "../../features/practice/hooks/useEvaluateAnswer";
+import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Progress } from "../../components/ui/progress";
@@ -26,12 +26,13 @@ import * as motion from "framer-motion/client";
 import { StatCard } from "@/components/shared/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
+import { SkillRadar } from "../../features/analytics/components/SkillRadar";
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
   const { data: resume, isLoading: isLoadingResume } = useResume();
   const { data: todaySession, isLoading: isLoadingSession } = useTodaySession();
-  const { data: practiceStats, isLoading: isLoadingStats } = useQuestionStatistics();
+  const { data: dashboardStats, isLoading: isLoadingStats } = useDashboardAnalytics();
 
   const hasRoadmap = !!user?.currentRoadmapId;
 
@@ -67,7 +68,7 @@ export default function DashboardPage() {
               <div className="w-px h-4 bg-border" />
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-yellow-500" />
-                <span className="font-bold text-sm">0 XP</span>
+                <span className="font-bold text-sm">{dashboardStats?.currentStreak || 0} Day Streak 🔥</span>
               </div>
             </div>
           }
@@ -121,28 +122,28 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard 
             title="Coding Accuracy" 
-            value={`${Math.round(practiceStats?.codingAccuracy || 0)}%`} 
+            value={`${Math.round(dashboardStats?.codingAccuracy || 0)}%`} 
             icon={Flame} 
             trend={{ value: 0, label: "from last week", positive: true }} 
             delay={0.1}
           />
           <StatCard 
             title="Theory Accuracy" 
-            value={`${Math.round(practiceStats?.theoryAccuracy || 0)}%`} 
+            value={`${Math.round(dashboardStats?.theoryAccuracy || 0)}%`} 
             icon={Target} 
             description="Across all topics" 
             delay={0.2}
           />
           <StatCard 
             title="Practice Questions" 
-            value={`${practiceStats?.totalAttempts || 0}`} 
+            value={`${dashboardStats?.practiceQuestions || 0}`} 
             icon={Dumbbell} 
             description="Answered so far" 
             delay={0.3}
           />
           <StatCard 
             title="Average Score" 
-            value={`${Math.round(practiceStats?.averageScore || 0)}%`} 
+            value={`${Math.round(dashboardStats?.averageScore || 0)}%`} 
             icon={BrainCircuit} 
             description="Overall interview readiness" 
             delay={0.4}
@@ -150,8 +151,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Today's Session Card */}
-          <Card className="lg:col-span-2 border-primary/20 shadow-md">
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Today's Session Card */}
+            <Card className="border-primary/20 shadow-md">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
                 <CardTitle>Today's Focus</CardTitle>
@@ -205,6 +207,10 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </div>
+
+          <div className="flex flex-col gap-6">
+          <SkillRadar stats={dashboardStats} />
 
           {/* Activity Timeline */}
           <Card>
@@ -239,6 +245,7 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     </>

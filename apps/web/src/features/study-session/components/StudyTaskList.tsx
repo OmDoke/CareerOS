@@ -1,7 +1,8 @@
 "use client";
 
-import { Circle, CheckCircle2 } from "lucide-react";
+import { Circle, CheckCircle2, RotateCw, AlertTriangle, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +27,21 @@ export function StudyTaskList({ tasks }: Props) {
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start gap-4">
-                <h4 className="font-semibold text-lg">{task.title}</h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="font-semibold text-lg">{task.title}</h4>
+                  {task.topic && (() => {
+                    const now = new Date();
+                    const nextReview = task.topic.nextReviewDate ? new Date(task.topic.nextReviewDate) : null;
+                    if (nextReview && nextReview <= now && task.topic.status !== "PENDING") {
+                      return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"><RotateCw className="h-3 w-3 mr-1"/> Review Due</Badge>;
+                    } else if (task.topic.masteryPercentage < 50 && task.topic.status !== "PENDING") {
+                      return <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"><AlertTriangle className="h-3 w-3 mr-1"/> Weak Topic</Badge>;
+                    } else if (task.topic.status === "PENDING") {
+                      return <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"><Sparkles className="h-3 w-3 mr-1"/> New</Badge>;
+                    }
+                    return null;
+                  })()}
+                </div>
                 <span className="text-sm text-muted-foreground font-medium bg-secondary px-2 py-1 rounded-md whitespace-nowrap">
                   {task.estimatedMinutes} mins
                 </span>

@@ -16,34 +16,56 @@ export class StudySessionService {
       throw new BadRequestError("No active roadmap found to generate a study session.");
     }
 
-    // Find the first module that has pending topics
-    let currentModule: (typeof roadmap.modules)[0] | null = null;
-    let pendingTopics: (typeof roadmap.modules)[0]["topics"] = [];
+    // 1. Review Due
+    const now = new Date();
+    const allTopics = roadmap.modules.flatMap(m => m.topics);
+    const reviewDue = allTopics.filter(t => t.nextReviewDate && t.nextReviewDate <= now && t.status !== "PENDING");
+    
+    // 2. Weakest Topics (Mastery < 50)
+    const weakTopics = allTopics.filter(t => t.masteryPercentage < 50 && t.status !== "PENDING" && !reviewDue.includes(t));
+    weakTopics.sort((a, b) => a.masteryPercentage - b.masteryPercentage);
 
-    for (const module of roadmap.modules) {
-      const unfinished = module.topics.filter(t => t.status === "PENDING");
-      if (unfinished.length > 0) {
-        currentModule = module;
-        pendingTopics = unfinished.sort((a, b) => a.order - b.order);
-        break;
-      }
-    }
+    // 3. New Topics
+    const newTopics = allTopics.filter(t => t.status === "PENDING").sort((a, b) => {
+      // Sort by module order, then topic order
+      const modA = roadmap.modules.find(m => m.id === a.moduleId)!;
+      const modB = roadmap.modules.find(m => m.id === b.moduleId)!;
+      if (modA.order !== modB.order) return modA.order - modB.order;
+      return a.order - b.order;
+    });
 
-    if (!currentModule || pendingTopics.length === 0) {
-      throw new BadRequestError("No pending topics found in the roadmap. You have completed everything!");
-    }
-
-    // Select topics (up to 3 or roughly 60 mins)
-    const selectedTopics = [];
+    // Select topics to fill ~60 minutes
+    const selectedTopics: any[] = [];
     let totalMinutes = 0;
-    for (const topic of pendingTopics) {
+
+    const addTopic = (topic: any) => {
+      if (totalMinutes >= 60) return false;
+      if (selectedTopics.find(t => t.id === topic.id)) return true;
       selectedTopics.push(topic);
-      totalMinutes += topic.estimatedMinutes || 30; // default 30 min if missing
-      
-      if (selectedTopics.length >= 3 || totalMinutes >= 60) {
-        break;
-      }
+      totalMinutes += topic.estimatedMinutes || 30;
+      return true;
+    };
+
+    // Pick 1 review if available
+    if (reviewDue.length > 0) addTopic(reviewDue[0]);
+    // Pick 1 weak if available
+    if (weakTopics.length > 0) addTopic(weakTopics[0]);
+    // Fill rest with new topics
+    for (const nt of newTopics) {
+      if (!addTopic(nt)) break;
     }
+    // If still have time, fill with more reviews
+    for (const rt of reviewDue) {
+      if (!addTopic(rt)) break;
+    }
+
+    if (selectedTopics.length === 0) {
+      throw new BadRequestError("No pending or review topics found. You have completed everything!");
+    }
+
+    // Determine currentModule (from the first new topic, or fallback to first selected)
+    const activeTopic = selectedTopics.find(t => t.status === "PENDING") || selectedTopics[0];
+    const currentModule = roadmap.modules.find(m => m.id === activeTopic.moduleId)!;
 
     // Construct tasks
     const tasks = selectedTopics.map((topic, i) => ({
@@ -53,13 +75,13 @@ export class StudySessionService {
       estimatedMinutes: topic.estimatedMinutes || 30,
     }));
 
-    // Create session (defaulting to 5 total questions for future question generation)
+    // Create session
     const newSession = await studySessionRepository.create(
       userId,
       roadmap.id,
       currentModule.id,
       totalMinutes,
-      5, // default questions
+      selectedTopics.length * 2, // e.g. 2 questions per topic
       tasks
     );
 

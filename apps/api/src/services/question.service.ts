@@ -48,7 +48,7 @@ export class QuestionService {
     // Format previous attempts for the prompt
     const previousAttempts = previousAttemptsRaw.map((a: any) => ({
       question: a.question,
-      score: a.score,
+      score: a.overallScore,
       status: a.status,
     }));
 

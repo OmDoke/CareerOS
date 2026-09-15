@@ -25,8 +25,5 @@ export const mapEvaluationToDb = (evaluation: EvaluationResult, model: string, t
     evaluationModel: model,
     tokensUsed: tokensUsed,
     evaluatedAt: new Date(),
-    
-    score: evaluation.overallScore, // Backward compatibility for legacy score field
-    aiFeedback: evaluation.feedback, // Backward compatibility
   };
 };
