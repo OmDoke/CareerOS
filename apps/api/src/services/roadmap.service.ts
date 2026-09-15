@@ -1,5 +1,5 @@
 import { getRoadmapGeneratorPrompt } from "@career-os/prompts";
-import { geminiProvider } from "../providers/gemini.provider";
+import { aiProviderService } from "./ai-provider.service";
 import { roadmapRepository } from "../repositories/roadmap.repository";
 import { resumeRepository } from "../repositories/resume.repository";
 import { NotFoundError, BadRequestError } from "../errors/custom-errors";
@@ -33,7 +33,8 @@ export class RoadmapService {
 
     try {
       const prompt = getRoadmapGeneratorPrompt(JSON.stringify(resumeAnalysis), targetRole);
-      const structuredRoadmap = await geminiProvider.generateJSON(prompt);
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
+      const structuredRoadmap = await provider.generateJSON(prompt, model);
 
       // Inject target role explicitly
       structuredRoadmap.targetRole = targetRole;

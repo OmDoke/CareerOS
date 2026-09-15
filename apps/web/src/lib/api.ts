@@ -12,3 +12,13 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.data?.message === "AI_PROVIDER_NOT_CONFIGURED") {
+      window.dispatchEvent(new CustomEvent("ai-provider-missing"));
+    }
+    return Promise.reject(error);
+  }
+);

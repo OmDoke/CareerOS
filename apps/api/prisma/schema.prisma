@@ -40,6 +40,7 @@ model User {
   notificationSettings NotificationSettings?
   notificationLogs  NotificationLog[]
   telegramConnections TelegramConnection[]
+  aiProviderSettings  AIProviderSettings?
 }
 
 model NotificationSettings {
@@ -99,6 +100,19 @@ model SchedulerLog {
   completedAt     DateTime @default(now())
 }
 
+
+model AIProviderSettings {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String   @default("GEMINI")
+  encryptedApiKey String
+  selectedModel   String?
+  isConnected     Boolean  @default(false)
+  lastValidated   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
 
 model Resume {
   id               String   @id @default(cuid())

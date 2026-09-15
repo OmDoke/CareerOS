@@ -6,14 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Moon, Sun, Monitor, Save, User, Bell, Shield, LogOut, CreditCard } from "lucide-react";
+import { Moon, Sun, Monitor, Save, User, Bell, Shield, LogOut, CreditCard, Bot } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import * as motion from "framer-motion/client";
 import { TelegramConnectCard } from "../../features/notifications/components/TelegramConnectCard";
 import { NotificationSettingsCard } from "../../features/notifications/components/NotificationSettingsCard";
 import { NotificationHistoryTable } from "../../features/notifications/components/NotificationHistoryTable";
+import { AIProviderCard } from "../../features/settings/components/AIProviderCard";
 
-type TabType = "account" | "preferences" | "notifications" | "billing";
+type TabType = "account" | "preferences" | "notifications" | "ai-provider";
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -71,12 +72,12 @@ export default function SettingsPage() {
               Notifications
             </Button>
             <Button 
-              variant={activeTab === "billing" ? "secondary" : "ghost"} 
+              variant={activeTab === "ai-provider" ? "secondary" : "ghost"} 
               className="justify-start shrink-0"
-              onClick={() => setActiveTab("billing")}
+              onClick={() => setActiveTab("ai-provider")}
             >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Billing
+              <Bot className="mr-2 h-4 w-4" />
+              AI Provider
             </Button>
           </nav>
 
@@ -201,28 +202,9 @@ export default function SettingsPage() {
               </motion.div>
             )}
 
-            {activeTab === "billing" && (
+            {activeTab === "ai-provider" && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Subscription Plan</CardTitle>
-                    <CardDescription>Manage your billing and subscription details.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="p-4 border rounded-xl bg-secondary/30 flex justify-between items-center">
-                      <div>
-                        <h4 className="font-bold text-lg">Pro Plan</h4>
-                        <p className="text-sm text-muted-foreground">Active until Dec 31, 2026</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-xl">$15 <span className="text-sm text-muted-foreground font-normal">/ mo</span></p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      Manage Subscription
-                    </Button>
-                  </CardContent>
-                </Card>
+                <AIProviderCard />
               </motion.div>
             )}
           </div>

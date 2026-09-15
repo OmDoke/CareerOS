@@ -1,6 +1,6 @@
 import { prisma } from "../database";
 import { telegramProvider } from "../providers/telegram.provider";
-import { geminiProvider } from "../providers/gemini.provider";
+import { aiProviderService } from "./ai-provider.service";
 import { logger } from "../utils/logger";
 import { studySessionRepository } from "../repositories/study-session.repository";
 import { roadmapRepository } from "../repositories/roadmap.repository";
@@ -119,7 +119,8 @@ export class NotificationService {
     Use a friendly, encouraging tone. Do not use markdown wrappers. Keep it concise. Add a relevant emoji.`;
 
     try {
-      const motivation = await geminiProvider.generateContent(prompt, "gemini-3.6-flash");
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
+      const motivation = await provider.generateContent(prompt, model);
       await this.logAndSend(userId, chatId, "MOTIVATION", motivation.trim());
     } catch (error) {
       logger.error({ err: error }, "Failed to generate motivation");

@@ -1,4 +1,4 @@
-import { geminiProvider } from "../providers/gemini.provider";
+import { aiProviderService } from "./ai-provider.service";
 import {
   getQuestionGenerationPrompt,
   getQuestionHintPrompt,
@@ -16,10 +16,12 @@ export class QuestionGeneratorService {
     previousTopics: string[];
     targetDifficulty: string;
     previousAttempts: Array<{ question: string; score: number | null; status: string }>;
+    userId: string;
   }) {
     try {
       const prompt = getQuestionGenerationPrompt(context);
-      const generatedData = await geminiProvider.generateJSON(prompt);
+      const { provider, model } = await aiProviderService.getProviderForUser(context.userId);
+      const generatedData = await provider.generateJSON(prompt, model);
 
       // Validate structure
       if (!generatedData.question || !generatedData.type || !generatedData.difficulty) {
@@ -39,10 +41,11 @@ export class QuestionGeneratorService {
     }
   }
 
-  async generateHint(question: string, userAnswer: string | null) {
+  async generateHint(userId: string, question: string, userAnswer: string | null) {
     try {
       const prompt = getQuestionHintPrompt(question, userAnswer);
-      const generatedData = await geminiProvider.generateJSON(prompt);
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
+      const generatedData = await provider.generateJSON(prompt, model);
 
       if (!generatedData.hint) {
         throw new Error("Invalid hint format from Gemini");
@@ -55,10 +58,11 @@ export class QuestionGeneratorService {
     }
   }
 
-  async generateExplanation(question: string) {
+  async generateExplanation(userId: string, question: string) {
     try {
       const prompt = getQuestionExplanationPrompt(question);
-      const generatedData = await geminiProvider.generateJSON(prompt);
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
+      const generatedData = await provider.generateJSON(prompt, model);
 
       if (!generatedData.explanation) {
         throw new Error("Invalid explanation format from Gemini");

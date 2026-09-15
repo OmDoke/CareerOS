@@ -1,5 +1,5 @@
 import { getResumeAnalysisPrompt } from "@career-os/prompts";
-import { geminiProvider } from "../providers/gemini.provider";
+import { aiProviderService } from "./ai-provider.service";
 import { resumeRepository } from "../repositories/resume.repository";
 import { NotFoundError, BadRequestError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
@@ -22,7 +22,8 @@ export class AiAnalysisService {
 
     try {
       const prompt = getResumeAnalysisPrompt(resume.extractedText);
-      const structuredData = await geminiProvider.generateJSON(prompt);
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
+      const structuredData = await provider.generateJSON(prompt, model);
 
       // Save structured data — keys must match the prompt schema exactly
       const updatedResume = await resumeRepository.update(userId, {

@@ -84,6 +84,7 @@ export class QuestionService {
       previousTopics,
       targetDifficulty,
       previousAttempts,
+      userId,
     });
 
     // We store the full JSON generated output into a single string for `question` in the DB for simplicity, 
@@ -131,7 +132,7 @@ export class QuestionService {
     // Ensure the payload is parsed back to get the actual text
     const parsedQuestion = JSON.parse(attempt.question);
     
-    const hint = await questionGeneratorService.generateHint(parsedQuestion.question, userAnswer);
+    const hint = await questionGeneratorService.generateHint(userId, parsedQuestion.question, userAnswer);
     return { hint };
   }
 
@@ -142,7 +143,7 @@ export class QuestionService {
     }
 
     const parsedQuestion = JSON.parse(attempt.question);
-    const explanation = await questionGeneratorService.generateExplanation(parsedQuestion.question);
+    const explanation = await questionGeneratorService.generateExplanation(userId, parsedQuestion.question);
     return { explanation };
   }
 }

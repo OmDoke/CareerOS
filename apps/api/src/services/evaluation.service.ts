@@ -1,5 +1,5 @@
 import { prisma } from "../database";
-import { geminiProvider } from "../providers/gemini.provider";
+import { aiProviderService } from "./ai-provider.service";
 import { getEvaluationPrompt } from "@career-os/prompts";
 import { EvaluationContext, EvaluationResult } from "../types/evaluation.types";
 import { mapEvaluationToDb } from "../utils/evaluation.mapper";
@@ -104,19 +104,20 @@ export class EvaluationService {
         currentStrongTopics: [], // Simplify for now or fetch based on masteryPercentage > 80
       };
 
-      // 4. Call Gemini
+      // 4. Call Provider
       const prompt = getEvaluationPrompt(context);
+      const { provider, model } = await aiProviderService.getProviderForUser(userId);
       let evaluation: EvaluationResult;
       try {
-        evaluation = await geminiProvider.generateJSON(prompt);
+        evaluation = await provider.generateJSON(prompt, model);
       } catch (geminiError) {
         // Fallback retry once if malformed
-        logger.warn("Gemini parsing failed, retrying once...");
-        evaluation = await geminiProvider.generateJSON(prompt);
+        logger.warn("Provider parsing failed, retrying once...");
+        evaluation = await provider.generateJSON(prompt, model);
       }
 
       // 5. Update DB in Transaction
-      const mappedData = mapEvaluationToDb(evaluation, "gemini-3.6-flash", 0);
+      const mappedData = mapEvaluationToDb(evaluation, model, 0);
 
       const result = await prisma.$transaction(async (tx) => {
         // Update or Create QuestionAttempt

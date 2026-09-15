@@ -2,12 +2,31 @@
 
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
+import { useEffect } from "react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  
+  useEffect(() => {
+    const handleMissingProvider = () => {
+      toast.error("Connect your Gemini API Key", {
+        description: "An API key is required to use AI features.",
+        action: {
+          label: "Go To Settings",
+          onClick: () => router.push("/settings"),
+        },
+        duration: 10000,
+        id: "ai-provider-missing", // Prevent duplicates
+      });
+    };
+
+    window.addEventListener("ai-provider-missing", handleMissingProvider);
+    return () => window.removeEventListener("ai-provider-missing", handleMissingProvider);
+  }, [router]);
   
   return (
     <div className="flex min-h-screen bg-background">
