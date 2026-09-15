@@ -20,7 +20,7 @@ export class TelegramProvider {
 
     try {
       // Use polling to listen for incoming messages (e.g., /start TOKEN)
-      this.bot = new (TelegramBot as any)(token, { polling: true });
+      this.bot = new TelegramBot(token, { polling: true });
       this.isInitialized = true;
       logger.info("Telegram Bot successfully initialized with polling enabled.");
 

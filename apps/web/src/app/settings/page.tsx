@@ -9,8 +9,11 @@ import { useState, useEffect } from "react";
 import { Moon, Sun, Monitor, Save, User, Bell, Shield, LogOut, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import * as motion from "framer-motion/client";
+import { TelegramConnectCard } from "../../features/notifications/components/TelegramConnectCard";
+import { NotificationSettingsCard } from "../../features/notifications/components/NotificationSettingsCard";
+import { NotificationHistoryTable } from "../../features/notifications/components/NotificationHistoryTable";
 
-type TabType = "account" | "preferences" | "billing";
+type TabType = "account" | "preferences" | "notifications" | "billing";
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -58,6 +61,14 @@ export default function SettingsPage() {
             >
               <Monitor className="mr-2 h-4 w-4" />
               Preferences
+            </Button>
+            <Button 
+              variant={activeTab === "notifications" ? "secondary" : "ghost"} 
+              className="justify-start shrink-0"
+              onClick={() => setActiveTab("notifications")}
+            >
+              <Bell className="mr-2 h-4 w-4" />
+              Notifications
             </Button>
             <Button 
               variant={activeTab === "billing" ? "secondary" : "ghost"} 
@@ -173,6 +184,20 @@ export default function SettingsPage() {
                     )}
                   </CardContent>
                 </Card>
+              </motion.div>
+            )}
+
+            {activeTab === "notifications" && (
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2 items-start">
+                  <div className="space-y-6">
+                    <TelegramConnectCard />
+                    <NotificationSettingsCard />
+                  </div>
+                  <div>
+                    <NotificationHistoryTable />
+                  </div>
+                </div>
               </motion.div>
             )}
 
