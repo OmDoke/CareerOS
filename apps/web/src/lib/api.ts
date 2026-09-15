@@ -16,7 +16,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.data?.message === "AI_PROVIDER_NOT_CONFIGURED") {
+    const msg = error.response?.data?.message || error.response?.data?.error;
+    if (
+      msg === "AI_PROVIDER_NOT_CONFIGURED" ||
+      msg === "AI_PROVIDER_INITIALIZATION_FAILED" ||
+      msg === "Invalid API Key" ||
+      msg?.toLowerCase().includes("invalid api key") ||
+      msg?.toLowerCase().includes("key is invalid")
+    ) {
       window.dispatchEvent(new CustomEvent("ai-provider-missing"));
     }
     return Promise.reject(error);

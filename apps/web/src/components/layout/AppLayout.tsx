@@ -13,8 +13,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     const handleMissingProvider = () => {
-      toast.error("Connect your Gemini API Key", {
-        description: "An API key is required to use AI features.",
+      toast.error("Invalid or Missing Gemini API Key", {
+        description: "A valid API key is required to use AI features.",
         action: {
           label: "Go To Settings",
           onClick: () => router.push("/settings"),
