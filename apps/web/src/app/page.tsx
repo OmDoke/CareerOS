@@ -93,7 +93,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Resume AI Analysis</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  We parse your resume to understand exactly what you already know, so you never waste time learning basics you've already mastered.
+                  We parse your resume to understand exactly what you already know, so you never waste time learning basics you&apos;ve already mastered.
                 </p>
               </div>
 
@@ -103,7 +103,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Custom Roadmap</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Tell us your dream job title. We'll generate a step-by-step curriculum bridging the gap between your resume and the job description.
+                  Tell us your dream job title. We&apos;ll generate a step-by-step curriculum bridging the gap between your resume and the job description.
                 </p>
               </div>
 
@@ -113,7 +113,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Dynamic Practice</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Answer unique, context-aware interview questions generated on-the-fly. Get hints and conceptual explanations when you're stuck.
+                  Answer unique, context-aware interview questions generated on-the-fly. Get hints and conceptual explanations when you&apos;re stuck.
                 </p>
               </div>
             </div>

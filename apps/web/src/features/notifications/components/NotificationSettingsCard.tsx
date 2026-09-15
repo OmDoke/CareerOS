@@ -13,6 +13,7 @@ import { Save, BellRing } from "lucide-react";
 
 export function NotificationSettingsCard() {
   const queryClient = useQueryClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [settings, setSettings] = useState<any>(null);
 
   const { data, isLoading } = useQuery({
@@ -30,6 +31,7 @@ export function NotificationSettingsCard() {
   }, [data]);
 
   const mutation = useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: async (updated: any) => {
       const res = await api.patch("/notifications/settings", updated);
       return res.data;
@@ -41,7 +43,9 @@ export function NotificationSettingsCard() {
 
   if (isLoading || !settings) return <SpinnerSkeleton />;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (key: string, value: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setSettings((prev: any) => ({ ...prev, [key]: value }));
   };
 

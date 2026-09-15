@@ -34,6 +34,7 @@ export default function PracticePage() {
   
   const [hint, setHint] = useState<string | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [elapsedTime, setElapsedTime] = useState<number>(0);

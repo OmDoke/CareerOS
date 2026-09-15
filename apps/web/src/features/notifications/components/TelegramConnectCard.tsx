@@ -121,7 +121,7 @@ export function TelegramConnectCard() {
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">
-            We'll generate a unique token for you. You'll need to send this to our Telegram Bot to verify your account.
+            We&apos;ll generate a unique token for you. You&apos;ll need to send this to our Telegram Bot to verify your account.
           </div>
         )}
       </CardContent>

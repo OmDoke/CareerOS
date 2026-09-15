@@ -40,7 +40,7 @@ export function AIProviderCard() {
 
   const fetchSettings = async () => {
     try {
-      const res = await api.get("/api/v1/settings/ai");
+      const res = await api.get("/settings/ai");
       setSettings(res.data);
       if (res.data.selectedModel) {
         setSelectedModel(res.data.selectedModel);
@@ -50,7 +50,7 @@ export function AIProviderCard() {
       if (res.data.exists && res.data.isConnected) {
         fetchModels();
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch AI settings");
     } finally {
       setLoading(false);
@@ -60,11 +60,11 @@ export function AIProviderCard() {
   const fetchModels = async () => {
     setFetchingModels(true);
     try {
-      const res = await api.get("/api/v1/settings/ai/models");
+      const res = await api.get("/settings/ai/models");
       if (res.data.success) {
         setModels(res.data.models);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to fetch available models.");
     } finally {
       setFetchingModels(false);
@@ -73,6 +73,7 @@ export function AIProviderCard() {
 
   useEffect(() => {
     fetchSettings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSaveKey = async () => {
@@ -83,7 +84,7 @@ export function AIProviderCard() {
     
     setSaving(true);
     try {
-      const res = await api.post("/api/v1/settings/ai", {
+      const res = await api.post("/settings/ai", {
         provider: "GEMINI",
         apiKey,
       });
@@ -92,6 +93,7 @@ export function AIProviderCard() {
         setApiKey("");
         fetchSettings();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Invalid API Key");
     } finally {
@@ -102,13 +104,13 @@ export function AIProviderCard() {
   const handleUpdateModel = async (model: string) => {
     setSelectedModel(model);
     try {
-      await api.post("/api/v1/settings/ai", {
+      await api.post("/settings/ai", {
         provider: "GEMINI",
         selectedModel: model,
       });
       toast.success("Default model updated");
       setSettings((prev) => prev ? { ...prev, selectedModel: model } : null);
-    } catch (error) {
+    } catch {
       toast.error("Failed to update model");
     }
   };
@@ -116,12 +118,12 @@ export function AIProviderCard() {
   const handleTestConnection = async () => {
     const loadingToast = toast.loading("Testing connection...");
     try {
-      const res = await api.post("/api/v1/settings/ai/test");
+      const res = await api.post("/settings/ai/test");
       if (res.data.success) {
         toast.success(`Connection successful! Latency: ${res.data.latency}ms`, { id: loadingToast });
         setSettings((prev) => prev ? { ...prev, isConnected: true } : null);
       }
-    } catch (error) {
+    } catch {
       toast.error("Connection failed. Check your API key.", { id: loadingToast });
       setSettings((prev) => prev ? { ...prev, isConnected: false } : null);
     }

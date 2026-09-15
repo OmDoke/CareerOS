@@ -113,8 +113,11 @@ export default function RoadmapPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const totalTopics = roadmap.modules.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const completedTopics = roadmap.modules.reduce((acc: number, m: any) => 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     acc + (m.topics?.filter((t: any) => t.status === "COMPLETED").length || 0)
   , 0);
 
@@ -153,7 +156,7 @@ export default function RoadmapPage() {
         </div>
 
         <div className="space-y-6">
-          {roadmap.modules.map((mod: any, index: number) => (
+          {roadmap.modules.map((mod: any, index: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
             <motion.div
               key={mod.id || index}
               initial={{ opacity: 0, y: 10 }}

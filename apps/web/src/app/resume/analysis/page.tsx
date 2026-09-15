@@ -72,6 +72,7 @@ export default function AiAnalysisPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safeParseJSON = (data: string | undefined | null, fallback: any = []) => {
     if (!data) return fallback;
     try {

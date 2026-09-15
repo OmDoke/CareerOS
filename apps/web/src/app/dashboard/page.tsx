@@ -14,7 +14,6 @@ import {
   CalendarDays, 
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
   Dumbbell,
   Trophy,
   Flame,
@@ -156,7 +155,7 @@ export default function DashboardPage() {
             <Card className="border-primary/20 shadow-md">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle>Today's Focus</CardTitle>
+                <CardTitle>Today&apos;s Focus</CardTitle>
                 <CardDescription>Your recommended tasks for the day.</CardDescription>
               </div>
               <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">

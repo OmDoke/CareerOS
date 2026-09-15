@@ -2,10 +2,10 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
-import { Clock, Send, MessageCircle, Bug, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, MessageCircle, Bug, CheckCircle2, XCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ export function NotificationHistoryTable() {
       toast.success("Test notification dispatched!");
       queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to send test notification");
     }
@@ -57,7 +58,7 @@ export function NotificationHistoryTable() {
           </div>
         ) : (
           <div className="space-y-4">
-            {history?.map((log: any) => (
+            {history?.map((log: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
               <div key={log.id} className="flex items-start gap-4 p-4 border rounded-lg bg-card hover:bg-secondary/10 transition-colors">
                 <div className="mt-1 shrink-0">
                   {log.status === "DELIVERED" ? (

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Moon, Sun, Monitor, Save, User, Bell, Shield, LogOut, CreditCard, Bot } from "lucide-react";
+import { Moon, Sun, Monitor, Save, User, Bell, LogOut, Bot } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import * as motion from "framer-motion/client";
 import { TelegramConnectCard } from "../../features/notifications/components/TelegramConnectCard";

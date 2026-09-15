@@ -53,7 +53,7 @@ export default function TodayPage() {
                   ) : (
                     <>
                       <Sparkles className="h-4 w-4 text-yellow-300 mr-2" />
-                      Start Today's Session
+                      Start Today&apos;s Session
                     </>
                   )}
                 </Button>
@@ -68,6 +68,7 @@ export default function TodayPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const completedTasks = session.tasks?.filter((t: any) => t.status === "COMPLETED").length ?? 0;
   const totalTasks = session.tasks?.length ?? 0;
   const isCompleted = session.status === "COMPLETED";
@@ -110,7 +111,7 @@ export default function TodayPage() {
             <div className="h-20 w-20 rounded-full bg-success/20 flex items-center justify-center mb-6 ring-8 ring-success/10">
               <CalendarCheck className="h-10 w-10 text-success" />
             </div>
-            <h2 className="text-3xl font-bold mb-2">You're all done for today!</h2>
+            <h2 className="text-3xl font-bold mb-2">You&apos;re all done for today!</h2>
             <p className="text-muted-foreground mb-8 max-w-md text-lg">
               Great job completing your study session. Come back tomorrow for your next customized curriculum tasks.
             </p>

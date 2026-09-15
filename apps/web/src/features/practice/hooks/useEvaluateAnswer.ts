@@ -5,6 +5,7 @@ export function useEvaluateAnswer() {
   const queryClient = useQueryClient();
   
   return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: async (data: any) => {
       const response = await api.post("/questions/evaluate", data);
       return response.data.data;

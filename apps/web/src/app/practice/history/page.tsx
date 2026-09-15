@@ -31,7 +31,7 @@ export default function PracticeHistoryPage() {
             <p>No practice attempts yet.</p>
           </div>
         ) : (
-          history?.map((attempt: any) => (
+          history?.map((attempt: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
             <Card key={attempt.id} className="overflow-hidden transition-all hover:border-primary/50">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">

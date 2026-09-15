@@ -3,6 +3,7 @@
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function SkillRadar({ stats }: { stats: any }) {
   // Translate our stats into radar data
   const data = [

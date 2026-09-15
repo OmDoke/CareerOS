@@ -6,6 +6,7 @@ import { CheckCircle2, XCircle, AlertTriangle, BookOpen, Lightbulb, ChevronRight
 import ReactMarkdown from "react-markdown";
 
 interface EvaluationDashboardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   evaluation: any;
   onNextQuestion: () => void;
 }
