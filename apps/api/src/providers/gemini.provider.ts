@@ -29,4 +29,22 @@ export const geminiProvider = {
       throw error;
     }
   },
+  async generateContent(prompt: string, model: string = "gemini-3.6-flash"): Promise<string> {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+      });
+
+      const text = response.text;
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
+      }
+
+      return text;
+    } catch (error) {
+      logger.error({ err: error }, "Failed to generate text with Gemini");
+      throw error;
+    }
+  },
 };

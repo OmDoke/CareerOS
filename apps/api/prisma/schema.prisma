@@ -25,13 +25,80 @@ model User {
   longestStreak   Int      @default(0)
   lastStudyDate   DateTime?
 
+  // Telegram Integration
+  telegramChatId      String?  @unique
+  telegramUsername    String?
+  telegramConnected   Boolean  @default(false)
+  telegramConnectedAt DateTime?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   resume          Resume?
   roadmap         Roadmap?
   studySessions   StudySession[]
   questionAttempts QuestionAttempt[]
+  notificationSettings NotificationSettings?
+  notificationLogs  NotificationLog[]
+  telegramConnections TelegramConnection[]
 }
+
+model NotificationSettings {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  telegramEnabled     Boolean  @default(true)
+  reminderTime        String   @default("09:00") // HH:mm format
+  timezone            String   @default("UTC")
+  
+  weeklyReport        Boolean  @default(true)
+  motivationMessages  Boolean  @default(true)
+  practiceReminder    Boolean  @default(true)
+  reviewReminder      Boolean  @default(true)
+  studyReminder       Boolean  @default(true)
+  
+  quietHoursStart     String?  // HH:mm
+  quietHoursEnd       String?  // HH:mm
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model NotificationLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String   // e.g. "MOTIVATION", "REMINDER", "WEEKLY_REPORT"
+  message         String
+  status          String   @default("PENDING") // PENDING, DELIVERED, FAILED
+  error           String?
+  retries         Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TelegramConnection {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token           String   @unique
+  expiresAt       DateTime
+  used            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model SchedulerLog {
+  id              String   @id @default(cuid())
+  jobName         String
+  status          String   // SUCCESS, FAILED
+  durationMs      Int
+  usersProcessed  Int
+  messagesSent    Int
+  error           String?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime @default(now())
+}
+
 
 model Resume {
   id               String   @id @default(cuid())
