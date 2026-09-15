@@ -108,6 +108,7 @@ model RoadmapTopic {
   description      String
   estimatedMinutes Int
   status           String        @default("PENDING")
+  masteryPercentage Int          @default(0)
   studyTasks       StudyTask[]
   questionAttempts QuestionAttempt[]
 }
@@ -156,10 +157,32 @@ model QuestionAttempt {
   topic            RoadmapTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
   
   question         String
+  questionType     String?
   difficulty       String       @default("Beginner")
   userAnswer       String?
-  aiFeedback       String?
-  score            Int?
+  
+  overallScore     Int?
+  technicalScore   Int?
+  problemSolvingScore Int?
+  communicationScore  Int?
+  timeComplexityScore Int?
+  spaceComplexityScore Int?
+  confidenceScore  Int?
+  
+  feedback         String?
+  strengths        String?
+  mistakes         String?
+  missingConcepts  String?
+  correctAnswer    String?
+  optimizedAnswer  String?
+  resources        String?
+  followUpQuestions String?
+  
+  evaluationJson   String?
+  evaluationModel  String?
+  tokensUsed       Int?
+  timeTaken        Int?
+  evaluatedAt      DateTime?
   
   status           String       @default("PENDING") // PENDING, SKIPPED, SUBMITTED
   

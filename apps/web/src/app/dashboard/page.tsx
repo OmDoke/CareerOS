@@ -3,6 +3,7 @@
 import { useAuthStore } from "../../store/auth.store";
 import { useResume } from "../../features/resume/hooks/useResume";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
+import { useQuestionStatistics } from "../../features/practice/hooks/useEvaluateAnswer";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Progress } from "../../components/ui/progress";
@@ -30,10 +31,11 @@ export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
   const { data: resume, isLoading: isLoadingResume } = useResume();
   const { data: todaySession, isLoading: isLoadingSession } = useTodaySession();
+  const { data: practiceStats, isLoading: isLoadingStats } = useQuestionStatistics();
 
   const hasRoadmap = !!user?.currentRoadmapId;
 
-  if (isLoadingResume || isLoadingSession) {
+  if (isLoadingResume || isLoadingSession || isLoadingStats) {
     return (
       <>
         <SpinnerSkeleton />
@@ -118,31 +120,31 @@ export default function DashboardPage() {
         {/* Main Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard 
-            title="Current Streak" 
-            value="3 Days" 
+            title="Coding Accuracy" 
+            value={`${Math.round(practiceStats?.codingAccuracy || 0)}%`} 
             icon={Flame} 
-            trend={{ value: 100, label: "from last week", positive: true }} 
+            trend={{ value: 0, label: "from last week", positive: true }} 
             delay={0.1}
           />
           <StatCard 
-            title="Skills Mastered" 
-            value="0" 
+            title="Theory Accuracy" 
+            value={`${Math.round(practiceStats?.theoryAccuracy || 0)}%`} 
             icon={Target} 
-            description="Ready for interviews" 
+            description="Across all topics" 
             delay={0.2}
           />
           <StatCard 
             title="Practice Questions" 
-            value="0" 
+            value={`${practiceStats?.totalAttempts || 0}`} 
             icon={Dumbbell} 
-            description="Answered correctly" 
+            description="Answered so far" 
             delay={0.3}
           />
           <StatCard 
             title="Average Score" 
-            value="0%" 
+            value={`${Math.round(practiceStats?.averageScore || 0)}%`} 
             icon={BrainCircuit} 
-            description="Across all topics" 
+            description="Overall interview readiness" 
             delay={0.4}
           />
         </div>

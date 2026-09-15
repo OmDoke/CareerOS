@@ -1,14 +1,16 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   useGenerateQuestion, 
   useSkipQuestion, 
   useQuestionHint, 
   useQuestionExplanation 
 } from "../../features/practice/hooks/useQuestions";
+import { useEvaluateAnswer } from "../../features/practice/hooks/useEvaluateAnswer";
 import { QuestionCard } from "../../features/practice/components/QuestionCard";
+import { EvaluationDashboard } from "../../features/practice/components/EvaluationDashboard";
 import { Button } from "../../components/ui/button";
 import { Loader2, AlertCircle, Lightbulb, SkipForward, BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -32,11 +34,30 @@ export default function PracticePage() {
   
   const [hint, setHint] = useState<string | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
+  const [evaluationResult, setEvaluationResult] = useState<any>(null);
+  const [startTime, setStartTime] = useState<number>(0);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+
+  useEffect(() => {
+    if (!evaluationResult && questionData && startTime > 0) {
+      const interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [startTime, evaluationResult, questionData]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   const generateQuestion = useGenerateQuestion();
   const skipQuestion = useSkipQuestion();
   const getHint = useQuestionHint();
   const getExplanation = useQuestionExplanation();
+  const evaluateAnswer = useEvaluateAnswer();
 
   if (!sessionId || !taskId) {
     return (
@@ -73,11 +94,14 @@ export default function PracticePage() {
     setSelectedOption(null);
     setTextAnswer("");
     setQuestionData(null);
+    setEvaluationResult(null);
     
     generateQuestion.mutate({ sessionId, taskId }, {
       onSuccess: (data) => {
         setCurrentAttemptId(data.attemptId);
-        setQuestionData(data.question);
+        setQuestionData({ ...data.question, topicId: data.topicId });
+        setStartTime(Date.now());
+        setElapsedTime(0);
       }
     });
   };
@@ -103,6 +127,30 @@ export default function PracticePage() {
     if (!currentAttemptId) return;
     getExplanation.mutate({ attemptId: currentAttemptId }, {
       onSuccess: (data) => setExplanation(data.explanation)
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!currentAttemptId || !questionData) return;
+    const currentAnswer = questionData.options ? selectedOption : textAnswer;
+    if (!currentAnswer) return;
+
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+    evaluateAnswer.mutate({
+      questionId: currentAttemptId,
+      studyTaskId: taskId,
+      studySessionId: sessionId,
+      roadmapTopicId: questionData.topicId || taskId,
+      question: questionData.question,
+      questionType: questionData.type,
+      difficulty: questionData.difficulty,
+      userAnswer: currentAnswer,
+      timeTaken
+    }, {
+      onSuccess: (data) => {
+        setEvaluationResult(data);
+      }
     });
   };
 
@@ -140,6 +188,11 @@ export default function PracticePage() {
       <div className="container max-w-4xl mx-auto py-8 px-4">
         {generateQuestion.isPending ? (
           <QuestionSkeleton />
+        ) : evaluationResult ? (
+          <EvaluationDashboard 
+            evaluation={evaluationResult} 
+            onNextQuestion={handleNextQuestion} 
+          />
         ) : questionData ? (
           <div className="space-y-6">
             <QuestionCard 
@@ -161,6 +214,10 @@ export default function PracticePage() {
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
                 />
+                <div className="flex justify-between items-center text-sm text-muted-foreground mt-2 px-1">
+                  <span>{textAnswer.length} characters</span>
+                  <span className="font-mono bg-muted px-2 py-1 rounded-md">{formatTime(elapsedTime)}</span>
+                </div>
               </div>
             )}
 
@@ -187,12 +244,23 @@ export default function PracticePage() {
               </div>
               
               <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button variant="secondary" onClick={handleSkip} disabled={skipQuestion.isPending} className="flex-1 sm:flex-none">
+                <Button variant="secondary" onClick={handleSkip} disabled={skipQuestion.isPending || evaluateAnswer.isPending} className="flex-1 sm:flex-none">
                   <SkipForward className="h-4 w-4 mr-2" />
                   Skip
                 </Button>
-                <Button onClick={() => alert("Submit Answer will be implemented in Phase 8")} className="flex-1 sm:flex-none">
-                  Submit Answer
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={evaluateAnswer.isPending || (!selectedOption && !textAnswer.trim())} 
+                  className="flex-1 sm:flex-none"
+                >
+                  {evaluateAnswer.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Evaluating...
+                    </>
+                  ) : (
+                    "Submit Answer"
+                  )}
                 </Button>
               </div>
             </div>

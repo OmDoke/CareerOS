@@ -102,6 +102,7 @@ export class QuestionService {
 
     return {
       attemptId: attempt.id,
+      topicId: task.topicId,
       question: generated,
     };
   }
