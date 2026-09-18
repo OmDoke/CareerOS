@@ -1,4 +1,4 @@
-import { prisma } from "../database";
+import { aiProviderRepository } from "../repositories/ai-provider.repository";
 import { cryptoService } from "./crypto.service";
 import { ProviderFactory } from "../providers/provider.factory";
 import { AIProvider } from "../providers/provider.interface";
@@ -11,9 +11,7 @@ export const aiProviderService = {
    * Also returns the user's selected model to use.
    */
   async getProviderForUser(userId: string): Promise<{ provider: AIProvider; model: string }> {
-    const settings = await prisma.aIProviderSettings.findUnique({
-      where: { userId },
-    });
+    const settings = await aiProviderRepository.findByUserId(userId);
 
     if (!settings || !settings.encryptedApiKey || !settings.isConnected) {
       logger.warn(`User ${userId} attempted to use AI features without a connected provider.`);
@@ -31,10 +29,7 @@ export const aiProviderService = {
       logger.error({ err: error, userId }, "Failed to initialize AI Provider for user");
       
       // Auto-disconnect if decryption fails or key is invalid
-      await prisma.aIProviderSettings.update({
-        where: { userId },
-        data: { isConnected: false },
-      });
+      await aiProviderRepository.updateByUserId(userId, { isConnected: false });
       
       throw new AppError("AI_PROVIDER_INITIALIZATION_FAILED", 500);
     }

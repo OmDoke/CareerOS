@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../database";
+import { aiProviderRepository } from "../repositories/ai-provider.repository";
 import { cryptoService } from "../services/crypto.service";
 import { ProviderFactory } from "../providers/provider.factory";
 import { logger } from "../utils/logger";
@@ -13,9 +13,7 @@ export class AISettingsController {
     const userId = (req as any).user?.id;
     if (!userId) throw new AppError("Unauthorized", 401);
 
-    const settings = await prisma.aIProviderSettings.findUnique({
-      where: { userId },
-    });
+    const settings = await aiProviderRepository.findByUserId(userId);
 
     if (!settings) {
       return res.status(200).json({
@@ -49,9 +47,7 @@ export class AISettingsController {
     }
 
     // Upsert the settings
-    const currentSettings = await prisma.aIProviderSettings.findUnique({
-      where: { userId },
-    });
+    const currentSettings = await aiProviderRepository.findByUserId(userId);
 
     let encryptedApiKey = currentSettings?.encryptedApiKey || "";
 
@@ -69,24 +65,24 @@ export class AISettingsController {
       }
     }
 
-    const updated = await prisma.aIProviderSettings.upsert({
-      where: { userId },
-      update: {
+    const updated = await aiProviderRepository.upsert(
+      userId,
+      {
         provider,
         ...(apiKey && { encryptedApiKey }),
         ...(selectedModel && { selectedModel }),
         isConnected: true,
         lastValidated: new Date(),
       },
-      create: {
+      {
         userId,
         provider,
         encryptedApiKey,
         selectedModel,
         isConnected: true,
         lastValidated: new Date(),
-      },
-    });
+      }
+    );
 
     const decryptedKey = cryptoService.decrypt(updated.encryptedApiKey);
 
@@ -106,9 +102,7 @@ export class AISettingsController {
     const userId = (req as any).user?.id;
     if (!userId) throw new AppError("Unauthorized", 401);
 
-    await prisma.aIProviderSettings.delete({
-      where: { userId },
-    });
+    await aiProviderRepository.deleteByUserId(userId);
 
     res.status(200).json({ success: true });
   }
@@ -120,9 +114,7 @@ export class AISettingsController {
     const userId = (req as any).user?.id;
     if (!userId) throw new AppError("Unauthorized", 401);
 
-    const settings = await prisma.aIProviderSettings.findUnique({
-      where: { userId },
-    });
+    const settings = await aiProviderRepository.findByUserId(userId);
 
     if (!settings || !settings.encryptedApiKey) {
       throw new AppError("No API key configured", 400);
@@ -137,16 +129,14 @@ export class AISettingsController {
       const latency = Date.now() - start;
 
       if (isValid) {
-        await prisma.aIProviderSettings.update({
-          where: { userId },
-          data: { isConnected: true, lastValidated: new Date() },
+        await aiProviderRepository.updateByUserId(userId, {
+          isConnected: true, lastValidated: new Date()
         });
 
         res.status(200).json({ success: true, latency });
       } else {
-        await prisma.aIProviderSettings.update({
-          where: { userId },
-          data: { isConnected: false },
+        await aiProviderRepository.updateByUserId(userId, {
+          isConnected: false
         });
 
         res.status(400).json({ success: false, message: "Connection test failed. Key may be invalid or expired." });
@@ -164,9 +154,7 @@ export class AISettingsController {
     const userId = (req as any).user?.id;
     if (!userId) throw new AppError("Unauthorized", 401);
 
-    const settings = await prisma.aIProviderSettings.findUnique({
-      where: { userId },
-    });
+    const settings = await aiProviderRepository.findByUserId(userId);
 
     if (!settings || !settings.encryptedApiKey) {
       throw new AppError("No API key configured", 400);

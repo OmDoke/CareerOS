@@ -4,7 +4,7 @@ import { resumeRepository } from "../repositories/resume.repository";
 import { roadmapRepository } from "../repositories/roadmap.repository";
 import { studySessionRepository } from "../repositories/study-session.repository";
 import { NotFoundError, BadRequestError } from "../errors/custom-errors";
-import { prisma } from "../database";
+
 
 export class QuestionService {
   async generateNextQuestion(userId: string, sessionId: string, taskId: string) {
@@ -14,20 +14,7 @@ export class QuestionService {
       throw new NotFoundError("Study session not found.");
     }
 
-    const task = await prisma.studyTask.findUnique({
-      where: { id: taskId, sessionId },
-      include: {
-        topic: {
-          include: {
-            module: {
-              include: {
-                roadmap: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const task = await studySessionRepository.findTaskById(taskId, sessionId);
 
     if (!task) {
       throw new NotFoundError("Study task not found.");
@@ -67,12 +54,7 @@ export class QuestionService {
     }
 
     // Get all previous topics in module
-    const previousTopicsRaw = await prisma.roadmapTopic.findMany({
-      where: {
-        moduleId: task.topic.moduleId,
-        order: { lt: task.topic.order },
-      },
-    });
+    const previousTopicsRaw = await roadmapRepository.findTopicsBefore(task.topic.moduleId, task.topic.order);
     const previousTopics = previousTopicsRaw.map((t: any) => t.title);
 
     // Call AI to generate

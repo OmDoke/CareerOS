@@ -1,4 +1,5 @@
-import { prisma } from "../database";
+import { notificationRepository } from "../repositories/notification.repository";
+import { userRepository } from "../repositories/user.repository";
 import { telegramProvider } from "../providers/telegram.provider";
 import { aiProviderService } from "./ai-provider.service";
 import { logger } from "../utils/logger";
@@ -22,21 +23,7 @@ export class NotificationService {
     // Instead, let's just find users whose settings state reminderTime hour == utcHour (assuming settings are stored in UTC for now)
     const hourStr = utcHour.toString().padStart(2, "0");
     
-    const settings = await prisma.notificationSettings.findMany({
-      where: {
-        telegramEnabled: true,
-        reminderTime: {
-          startsWith: hourStr
-        },
-        user: {
-          telegramConnected: true,
-          telegramChatId: { not: null }
-        }
-      },
-      include: {
-        user: true
-      }
-    });
+    const settings = await notificationRepository.findSettingsForHourlyReminders(hourStr);
 
     for (const setting of settings) {
       if (!setting.user.telegramChatId) continue;
@@ -107,7 +94,7 @@ export class NotificationService {
 
   private async sendMotivation(userId: string, chatId: string, firstName: string) {
     // Get context
-    const user = await prisma.user.findUnique({ where: { id: userId }, include: { roadmap: true } });
+    const user = await userRepository.findByIdWithRoadmap(userId);
     if (!user) return;
 
     const streak = user.currentStreak;
@@ -147,27 +134,18 @@ export class NotificationService {
   private async logAndSend(userId: string, chatId: string, type: string, message: string) {
     // Prevent duplicate exact messages within the last 12 hours
     const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
-    const recent = await prisma.notificationLog.findFirst({
-      where: {
-        userId,
-        type,
-        message,
-        createdAt: { gte: twelveHoursAgo }
-      }
-    });
+    const recent = await notificationRepository.findRecentLog(userId, type, twelveHoursAgo);
 
     if (recent) return; // Skip to avoid spam
 
     const sent = await telegramProvider.sendMessage(chatId, message);
 
-    await prisma.notificationLog.create({
-      data: {
-        userId,
-        type,
-        message,
-        status: sent ? "DELIVERED" : "FAILED",
-        error: sent ? null : "Telegram API Error"
-      }
+    await notificationRepository.createLog({
+      userId,
+      type,
+      message,
+      status: sent ? "DELIVERED" : "FAILED",
+      error: sent ? null : "Telegram API Error"
     });
   }
 }

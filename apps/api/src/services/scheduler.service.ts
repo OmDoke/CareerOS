@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { notificationService } from "./notification.service";
 import { logger } from "../utils/logger";
-import { prisma } from "../database";
+import { schedulerRepository } from "../repositories/scheduler.repository";
 
 export class SchedulerService {
   private hourlyJob: cron.ScheduledTask | null = null;
@@ -20,31 +20,27 @@ export class SchedulerService {
         const durationMs = Date.now() - startTime;
         logger.info(`Finished hourly notification processing in ${durationMs}ms`);
         
-        await prisma.schedulerLog.create({
-          data: {
-            jobName: "HourlyNotifications",
-            status: "SUCCESS",
-            durationMs,
-            usersProcessed: 0, // We can track this if we return it from notificationService
-            messagesSent: 0,
-            startedAt: new Date(startTime),
-            completedAt: new Date(),
-          }
+        await schedulerRepository.createLog({
+          jobName: "HourlyNotifications",
+          status: "SUCCESS",
+          durationMs,
+          usersProcessed: 0, // We can track this if we return it from notificationService
+          messagesSent: 0,
+          startedAt: new Date(startTime),
+          completedAt: new Date(),
         });
       } catch (error: any) {
         logger.error({ err: error }, "Error during hourly notification processing");
         
-        await prisma.schedulerLog.create({
-          data: {
-            jobName: "HourlyNotifications",
-            status: "FAILED",
-            durationMs: Date.now() - startTime,
-            usersProcessed: 0,
-            messagesSent: 0,
-            error: error.message || "Unknown error",
-            startedAt: new Date(startTime),
-            completedAt: new Date(),
-          }
+        await schedulerRepository.createLog({
+          jobName: "HourlyNotifications",
+          status: "FAILED",
+          durationMs: Date.now() - startTime,
+          usersProcessed: 0,
+          messagesSent: 0,
+          error: error.message || "Unknown error",
+          startedAt: new Date(startTime),
+          completedAt: new Date(),
         });
       }
     });

@@ -1,4 +1,4 @@
-import { prisma } from "../database";
+import { roadmapRepository } from "../repositories/roadmap.repository";
 
 export class ReviewService {
   async scheduleNextReview(topicId: string, masteryPercentage: number): Promise<Date> {
@@ -17,12 +17,9 @@ export class ReviewService {
 
     const nextReviewDate = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
 
-    await prisma.roadmapTopic.update({
-      where: { id: topicId },
-      data: { 
-        nextReviewDate,
-        lastAttemptDate: now
-      }
+    await roadmapRepository.updateTopic(topicId, {
+      nextReviewDate,
+      lastAttemptDate: now
     });
 
     return nextReviewDate;

@@ -1,11 +1,9 @@
-import { prisma } from "../database";
+import { questionRepository } from "../repositories/question.repository";
+import { roadmapRepository } from "../repositories/roadmap.repository";
 
 export class MasteryService {
   async calculateTopicMastery(topicId: string): Promise<number> {
-    const attempts = await prisma.questionAttempt.findMany({
-      where: { topicId, status: "SUBMITTED" },
-      orderBy: { submittedAt: "asc" }
-    });
+    const attempts = await questionRepository.findAttemptsByTopic(topicId);
 
     if (attempts.length === 0) return 0;
 
@@ -41,10 +39,7 @@ export class MasteryService {
   async updateTopicMastery(topicId: string): Promise<number> {
     const mastery = await this.calculateTopicMastery(topicId);
     
-    await prisma.roadmapTopic.update({
-      where: { id: topicId },
-      data: { masteryPercentage: mastery }
-    });
+    await roadmapRepository.updateTopic(topicId, { masteryPercentage: mastery });
     
     return mastery;
   }

@@ -1,26 +1,37 @@
-import { prisma } from "../database";
-import { Prisma } from "@prisma/client";
+import { db } from "../db/database";
+import { resumes } from "../db/schema";
+import { eq, count } from "drizzle-orm";
 
 export class ResumeRepository {
-  async create(data: Prisma.ResumeCreateInput) {
-    return prisma.resume.create({ data });
+  async create(data: any) {
+    const result = await db.insert(resumes).values(data).returning();
+    return result[0];
   }
 
   async findByUserId(userId: string) {
-    return prisma.resume.findUnique({ where: { userId } });
+    return db.query.resumes.findFirst({
+      where: (r, { eq }) => eq(r.userId, userId),
+    });
   }
 
-  async update(userId: string, data: Prisma.ResumeUpdateInput) {
-    return prisma.resume.update({ where: { userId }, data });
+  async update(userId: string, data: any) {
+    const result = await db.update(resumes)
+      .set(data)
+      .where(eq(resumes.userId, userId))
+      .returning();
+    return result[0];
   }
 
   async delete(userId: string) {
-    return prisma.resume.delete({ where: { userId } });
+    const result = await db.delete(resumes)
+      .where(eq(resumes.userId, userId))
+      .returning();
+    return result[0];
   }
 
   async exists(userId: string) {
-    const count = await prisma.resume.count({ where: { userId } });
-    return count > 0;
+    const result = await db.select({ value: count() }).from(resumes).where(eq(resumes.userId, userId));
+    return result[0].value > 0;
   }
 }
 

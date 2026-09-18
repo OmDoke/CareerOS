@@ -1,4 +1,6 @@
-import { prisma } from "../database";
+import { userRepository } from "../repositories/user.repository";
+import { questionRepository } from "../repositories/question.repository";
+import { roadmapRepository } from "../repositories/roadmap.repository";
 import { aiProviderService } from "./ai-provider.service";
 import { getEvaluationPrompt } from "@career-os/prompts";
 import { EvaluationContext, EvaluationResult } from "../types/evaluation.types";
@@ -25,21 +27,7 @@ export class EvaluationService {
       } = data;
 
       // 1. Fetch required context
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          resume: true,
-          roadmap: {
-            include: {
-              modules: {
-                include: {
-                  topics: true,
-                },
-              },
-            },
-          },
-        },
-      });
+      const user = await userRepository.findByIdWithRoadmapAndResume(userId);
 
       if (!user || !user.roadmap || !user.resume) {
         throw new AppError("User context not found", 404);
@@ -61,21 +49,7 @@ export class EvaluationService {
       }
 
       // 2. Fetch previous attempts for context
-      const previousAttempts = await prisma.questionAttempt.findMany({
-        where: {
-          userId,
-          status: "SUBMITTED",
-        },
-        orderBy: {
-          submittedAt: "desc",
-        },
-        take: 5,
-        select: {
-          question: true,
-          overallScore: true,
-          status: true,
-        },
-      });
+      const previousAttempts = await questionRepository.findRecentSubmitted(userId, 5);
 
       // 3. Prepare Evaluation Context
       const context: EvaluationContext = {
@@ -119,38 +93,15 @@ export class EvaluationService {
       // 5. Update DB in Transaction
       const mappedData = mapEvaluationToDb(evaluation, model, 0);
 
-      const result = await prisma.$transaction(async (tx) => {
-        // Update or Create QuestionAttempt
-        // The attempt should already exist as PENDING when the question was generated
-        // But if it doesn't, we can't evaluate it properly? Actually the frontend might send an existing attempt id as questionId.
-        // Wait, questionId from frontend usually is the QuestionAttempt ID!
-        
-        const attempt = await tx.questionAttempt.update({
-          where: { id: questionId }, // Assuming questionId is the attempt id
-          data: {
-            ...mappedData,
-            userAnswer,
-            questionType,
-            timeTaken,
-            status: "SUBMITTED",
-            submittedAt: new Date(),
-          },
-        });
-
-        // Update RoadmapTopic mastery
-        if (evaluation.topicMasteryDelta !== 0) {
-          const topic = await tx.roadmapTopic.findUnique({ where: { id: roadmapTopicId } });
-          if (topic) {
-            const newMastery = Math.min(100, Math.max(0, topic.masteryPercentage + evaluation.topicMasteryDelta));
-            await tx.roadmapTopic.update({
-              where: { id: roadmapTopicId },
-              data: { masteryPercentage: newMastery },
-            });
-          }
-        }
-
-        return attempt;
-      });
+      const result = await questionRepository.saveEvaluationTransaction(
+        questionId,
+        roadmapTopicId,
+        mappedData,
+        evaluation.topicMasteryDelta,
+        userAnswer,
+        questionType,
+        timeTaken
+      );
 
       // After transaction completes, update mastery, scheduling, and analytics
       const newMastery = await masteryService.updateTopicMastery(roadmapTopicId);
@@ -169,18 +120,11 @@ export class EvaluationService {
   }
 
   async getHistory(userId: string) {
-    return prisma.questionAttempt.findMany({
-      where: { userId, status: "SUBMITTED" },
-      orderBy: { submittedAt: "desc" },
-      include: { topic: { select: { title: true } } },
-    });
+    return questionRepository.findAttemptsWithTopic(userId);
   }
 
   async getAttemptById(userId: string, id: string) {
-    const attempt = await prisma.questionAttempt.findUnique({
-      where: { id },
-      include: { topic: true },
-    });
+    const attempt = await questionRepository.findAttemptWithTopic(userId, id);
     if (!attempt || attempt.userId !== userId) {
       throw new AppError("Attempt not found", 404);
     }
@@ -188,9 +132,7 @@ export class EvaluationService {
   }
 
   async getStatistics(userId: string) {
-    const attempts = await prisma.questionAttempt.findMany({
-      where: { userId, status: "SUBMITTED" },
-    });
+    const attempts = await questionRepository.findAttemptsByUserSorted(userId);
 
     const totalAttempts = attempts.length;
     const averageScore = attempts.reduce((acc, curr) => acc + (curr.overallScore || 0), 0) / (totalAttempts || 1);
@@ -220,12 +162,10 @@ export class EvaluationService {
   }
 
   async getTopicStats(userId: string, topicId: string) {
-    const topic = await prisma.roadmapTopic.findUnique({ where: { id: topicId } });
+    const topic = await roadmapRepository.findTopicById(topicId);
     if (!topic) throw new AppError("Topic not found", 404);
 
-    const attempts = await prisma.questionAttempt.findMany({
-      where: { userId, topicId, status: "SUBMITTED" },
-    });
+    const attempts = await questionRepository.findAttemptsByTopicAndUser(userId, topicId);
 
     const averageScore = attempts.reduce((acc, curr) => acc + (curr.overallScore || 0), 0) / (attempts.length || 1);
 

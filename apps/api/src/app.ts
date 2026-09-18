@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware";
 import { logger } from "./utils/logger";
-import { prisma } from "./database";
+
 import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
@@ -36,9 +36,12 @@ app.use((req, res, next) => {
   next();
 });
 
+import { sql } from "drizzle-orm";
+import { db } from "./db/database";
+
 app.get("/api/v1/health", async (req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await db.execute(sql`SELECT 1`);
     res.json({ success: true, message: "CareerOS API Running", version: "1.0.0", database: "connected" });
   } catch (error) {
     logger.error({ error }, "Database connection failed");

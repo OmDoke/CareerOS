@@ -1,18 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../database";
+import { notificationRepository } from "../repositories/notification.repository";
+import { userRepository } from "../repositories/user.repository";
 
 export class NotificationController {
   async getSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user.id;
-      let settings = await prisma.notificationSettings.findUnique({
-        where: { userId }
-      });
+      let settings = await notificationRepository.findSettingsByUserId(userId);
 
       if (!settings) {
-        settings = await prisma.notificationSettings.create({
-          data: { userId }
-        });
+        settings = await notificationRepository.createSettings({ userId });
       }
 
       res.status(200).json(settings);
@@ -26,9 +23,9 @@ export class NotificationController {
       const userId = (req as any).user.id;
       const data = req.body;
 
-      const settings = await prisma.notificationSettings.upsert({
-        where: { userId },
-        update: {
+      const settings = await notificationRepository.upsertSettings(
+        userId,
+        {
           telegramEnabled: data.telegramEnabled,
           reminderTime: data.reminderTime,
           timezone: data.timezone,
@@ -40,7 +37,7 @@ export class NotificationController {
           quietHoursStart: data.quietHoursStart,
           quietHoursEnd: data.quietHoursEnd,
         },
-        create: {
+        {
           userId,
           telegramEnabled: data.telegramEnabled ?? true,
           reminderTime: data.reminderTime ?? "09:00",
@@ -53,7 +50,7 @@ export class NotificationController {
           quietHoursStart: data.quietHoursStart,
           quietHoursEnd: data.quietHoursEnd,
         }
-      });
+      );
 
       res.status(200).json(settings);
     } catch (error) {
@@ -64,11 +61,7 @@ export class NotificationController {
   async getHistory(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user.id;
-      const history = await prisma.notificationLog.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        take: 50
-      });
+      const history = await notificationRepository.findLogsByUserId(userId, 50);
 
       res.status(200).json(history);
     } catch (error) {
@@ -82,7 +75,7 @@ export class NotificationController {
       // In a real scenario, this would be an admin endpoint or limited to the user's own token
       // We'll just call the service method directly here for testing if we made it public, 
       // but since it's private, we will just simulate a message
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await userRepository.findById(userId);
       if (!user?.telegramChatId) {
         return res.status(400).json({ message: "Telegram not connected" });
       }
@@ -91,13 +84,11 @@ export class NotificationController {
       const sent = await telegramProvider.sendMessage(user.telegramChatId, "🔔 *Test Notification* from CareerOS! Your connection is working perfectly.");
       
       if (sent) {
-        await prisma.notificationLog.create({
-          data: {
-            userId,
-            type: "TEST",
-            message: "Test Notification",
-            status: "DELIVERED"
-          }
+        await notificationRepository.createLog({
+          userId,
+          type: "TEST",
+          message: "Test Notification",
+          status: "DELIVERED"
         });
         res.status(200).json({ message: "Test notification sent" });
       } else {

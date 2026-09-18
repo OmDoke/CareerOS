@@ -1,5 +1,7 @@
 import { telegramProvider } from "../providers/telegram.provider";
-import { prisma } from "../database";
+import { telegramRepository } from "../repositories/telegram.repository";
+import { userRepository } from "../repositories/user.repository";
+import { notificationRepository } from "../repositories/notification.repository";
 import { logger } from "../utils/logger";
 import crypto from "crypto";
 
@@ -22,10 +24,7 @@ export class TelegramService {
       }
 
       try {
-        const connection = await prisma.telegramConnection.findUnique({
-          where: { token },
-          include: { user: true }
-        });
+        const connection = await telegramRepository.findConnectionByToken(token);
 
         if (!connection || connection.used || connection.expiresAt < new Date()) {
           await telegramProvider.sendMessage(chatId, "❌ Invalid or expired connection token. Please generate a new one from your dashboard.");
@@ -33,28 +32,20 @@ export class TelegramService {
         }
 
         // Link account
-        await prisma.user.update({
-          where: { id: connection.userId },
-          data: {
-            telegramChatId: chatId,
-            telegramUsername: msg.from?.username || null,
-            telegramConnected: true,
-            telegramConnectedAt: new Date()
-          }
+        await userRepository.update(connection.userId, {
+          telegramChatId: chatId,
+          telegramUsername: msg.from?.username || null,
+          telegramConnected: true,
+          telegramConnectedAt: new Date()
         });
 
         // Mark token as used
-        await prisma.telegramConnection.update({
-          where: { id: connection.id },
-          data: { used: true }
-        });
+        await telegramRepository.updateConnection(connection.id, { used: true });
 
         // Initialize default settings if they don't exist
-        const settings = await prisma.notificationSettings.findUnique({ where: { userId: connection.userId } });
+        const settings = await notificationRepository.findSettingsByUserId(connection.userId);
         if (!settings) {
-          await prisma.notificationSettings.create({
-            data: { userId: connection.userId }
-          });
+          await notificationRepository.createSettings({ userId: connection.userId });
         }
 
         await telegramProvider.sendMessage(chatId, `✅ Successfully connected to your CareerOS account, ${connection.user.firstName || connection.user.email}! \n\nI will now send you daily study reminders, personalized motivation, and weekly progress reports based on your settings.`);
@@ -76,36 +67,31 @@ export class TelegramService {
     const token = crypto.randomBytes(3).toString("hex").toUpperCase();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
-    await prisma.telegramConnection.create({
-      data: {
-        userId,
-        token,
-        expiresAt
-      }
+    await telegramRepository.createConnection({
+      userId,
+      token,
+      expiresAt
     });
 
     return token;
   }
 
   async disconnect(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await userRepository.findById(userId);
     if (user?.telegramChatId) {
       await telegramProvider.sendMessage(user.telegramChatId, "🔌 Your CareerOS account has been disconnected from this Telegram bot.");
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        telegramChatId: null,
-        telegramUsername: null,
-        telegramConnected: false,
-        telegramConnectedAt: null
-      }
+    await userRepository.update(userId, {
+      telegramChatId: null,
+      telegramUsername: null,
+      telegramConnected: false,
+      telegramConnectedAt: null
     });
   }
   
   async getStatus(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await userRepository.findById(userId);
     return {
       connected: user?.telegramConnected || false,
       username: user?.telegramUsername || null,

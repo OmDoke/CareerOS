@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../errors/custom-errors";
 import { env } from "../config/env";
-import { prisma } from "../database";
+import { userRepository } from "../repositories/user.repository";
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -27,10 +27,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       throw new UnauthorizedError("Invalid token payload");
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, role: true },
-    });
+    const user = await userRepository.findById(decoded.userId);
 
     if (!user) {
       throw new UnauthorizedError("User not found");

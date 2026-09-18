@@ -1,8 +1,9 @@
-import { prisma } from "../database";
+import { userRepository } from "../repositories/user.repository";
+import { questionRepository } from "../repositories/question.repository";
 
 export class AnalyticsService {
   async updateStudyStreak(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await userRepository.findById(userId);
     if (!user) return;
 
     const now = new Date();
@@ -32,22 +33,16 @@ export class AnalyticsService {
       longestStreak = newStreak;
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        currentStreak: newStreak,
-        longestStreak: longestStreak,
-        lastStudyDate: now,
-      },
+    await userRepository.update(userId, {
+      currentStreak: newStreak,
+      longestStreak: longestStreak,
+      lastStudyDate: now,
     });
   }
 
   async getDashboardAnalytics(userId: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    const attempts = await prisma.questionAttempt.findMany({
-      where: { userId, status: "SUBMITTED" },
-      include: { topic: { include: { module: true } } }
-    });
+    const user = await userRepository.findById(userId);
+    const attempts = await questionRepository.findAttemptsWithTopicByUser(userId);
 
     const totalAttempts = attempts.length;
     const averageScore = attempts.reduce((acc, curr) => acc + (curr.overallScore || 0), 0) / (totalAttempts || 1);
@@ -69,10 +64,7 @@ export class AnalyticsService {
   }
 
   async getProgressAnalytics(userId: string) {
-    const attempts = await prisma.questionAttempt.findMany({
-      where: { userId, status: "SUBMITTED" },
-      orderBy: { submittedAt: "asc" }
-    });
+    const attempts = await questionRepository.findAttemptsByUserSorted(userId);
 
     // Group by day for weekly/monthly graphs (simplified to just last 7 days)
     const last7Days = Array.from({ length: 7 }).map((_, i) => {
