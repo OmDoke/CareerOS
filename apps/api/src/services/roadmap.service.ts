@@ -57,7 +57,7 @@ export class RoadmapService {
       throw new NotFoundError("Roadmap not found.");
     }
     
-    // Sort topics by order manually as Prisma nested orderBy can be tricky depending on the setup
+    // Sort topics by order manually
     roadmap.modules = roadmap.modules.map((m) => ({
       ...m,
       topics: m.topics.sort((a, b) => a.order - b.order),
