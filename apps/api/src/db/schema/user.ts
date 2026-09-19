@@ -27,8 +27,8 @@ export const users = pgTable('User', {
   telegramConnected: boolean('telegramConnected').default(false).notNull(),
   telegramConnectedAt: timestamp('telegramConnectedAt', { mode: 'date', precision: 3 }),
 
-  createdAt: timestamp('createdAt', { mode: 'date', precision: 3 }).defaultNow().notNull(),
-  updatedAt: timestamp('updatedAt', { mode: 'date', precision: 3 }).defaultNow().$onUpdate(() => new Date()).notNull(),
+  createdAt: timestamp('createdAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updatedAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
