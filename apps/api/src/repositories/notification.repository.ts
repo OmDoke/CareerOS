@@ -14,7 +14,12 @@ export class NotificationRepository {
   }
 
   async createSettings(data: any) {
-    const result = await db.insert(notificationSettings).values(data).returning();
+    const now = new Date();
+    const result = await db.insert(notificationSettings).values({
+      ...data,
+      createdAt: data.createdAt || now,
+      updatedAt: data.updatedAt || now,
+    }).returning();
     return result[0];
   }
 
