@@ -74,7 +74,11 @@ export class TelegramStudyService {
           currentTopic: currentTopicTitle,
           previousTopics: [],
           targetDifficulty: "Medium",
-          previousAttempts,
+          previousAttempts: previousAttempts.map(a => ({
+            question: a.question,
+            score: a.overallScore,
+            status: a.status
+          })),
           userId: user.id,
         });
 
