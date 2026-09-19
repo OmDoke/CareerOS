@@ -20,6 +20,12 @@ export class UserRepository {
     });
   }
 
+  async findByTelegramId(telegramChatId: string) {
+    return db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.telegramChatId, telegramChatId),
+    });
+  }
+
   async findAuthUserById(id: string) {
     return db.query.users.findFirst({
       where: (u, { eq }) => eq(u.id, id),

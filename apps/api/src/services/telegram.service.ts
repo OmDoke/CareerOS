@@ -3,6 +3,9 @@ import { telegramRepository } from "../repositories/telegram.repository";
 import { userRepository } from "../repositories/user.repository";
 import { notificationRepository } from "../repositories/notification.repository";
 import { logger } from "../utils/logger";
+import { naukriService } from "./naukri.service";
+import { evaluationService } from "./evaluation.service";
+import { db } from "../db/database";
 import crypto from "crypto";
 
 export class TelegramService {
@@ -59,6 +62,81 @@ export class TelegramService {
     bot.onText(/\/start$/, async (msg: any) => {
       const chatId = msg.chat.id.toString();
       await telegramProvider.sendMessage(chatId, "Welcome to CareerOS! To connect your account, please generate a link from your web dashboard.");
+    });
+
+    bot.onText(/\/naukri/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      const allowedId = process.env.TELEGRAM_ALLOWED_USER_ID;
+
+      // Ensure authorized access
+      if (allowedId && chatId !== allowedId) {
+        // Fallback: Check if they are connected to CareerOS
+        const user = await userRepository.findByTelegramId(chatId);
+        if (!user) {
+          await telegramProvider.sendMessage(chatId, "❌ Unauthorized. You must connect your CareerOS account or be the designated admin to use this command.");
+          return;
+        }
+      }
+
+      await telegramProvider.sendMessage(chatId, "🔄 Starting Naukri profile refresh...");
+      const result = await naukriService.updateProfileSummary();
+      
+      if (result.success) {
+        await telegramProvider.sendMessage(chatId, `✅ ${result.message}`);
+      } else {
+        await telegramProvider.sendMessage(chatId, `❌ ${result.message}`);
+      }
+    });
+
+    // Handle standard messages (answers to questions)
+    bot.on("message", async (msg: any) => {
+      // Ignore commands
+      if (msg.text && msg.text.startsWith("/")) return;
+
+      const chatId = msg.chat.id.toString();
+      const user = await userRepository.findByTelegramId(chatId);
+      if (!user) return;
+
+      // Check if user has a pending question
+      const pendingAttempt = await db.query.questionAttempts.findFirst({
+        where: (q, { eq, and }) => and(eq(q.userId, user.id), eq(q.status, "PENDING")),
+      });
+
+      if (!pendingAttempt) {
+        // Just ignore or send a fallback message if you prefer
+        return;
+      }
+
+      await telegramProvider.sendMessage(chatId, "🧠 Evaluating your answer...");
+
+      try {
+        const timeTaken = Math.floor((Date.now() - pendingAttempt.createdAt.getTime()) / 1000); // rough estimate
+        const result = await evaluationService.evaluateAnswer(user.id, {
+          questionId: pendingAttempt.id,
+          studyTaskId: pendingAttempt.studyTaskId,
+          studySessionId: pendingAttempt.studySessionId,
+          roadmapTopicId: pendingAttempt.topicId,
+          question: pendingAttempt.question,
+          questionType: pendingAttempt.questionType || "THEORY",
+          difficulty: pendingAttempt.difficulty,
+          userAnswer: msg.text,
+          timeTaken,
+        });
+
+        // Send feedback
+        let feedbackMessage = `📊 *Score*: ${result.overallScore}/100\n\n`;
+        feedbackMessage += `📝 *Feedback*: ${result.feedback}\n\n`;
+        if (result.mistakes) {
+          feedbackMessage += `⚠️ *Mistakes*: ${result.mistakes}\n\n`;
+        }
+        feedbackMessage += `✅ *Optimized Answer*: ${result.optimizedAnswer}`;
+
+        await telegramProvider.sendMessage(chatId, feedbackMessage);
+
+      } catch (error: any) {
+        logger.error({ err: error, userId: user.id }, "Failed to evaluate answer from Telegram");
+        await telegramProvider.sendMessage(chatId, "❌ Failed to evaluate your answer. Please try again later.");
+      }
     });
   }
 

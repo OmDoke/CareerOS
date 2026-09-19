@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import { notificationService } from "./notification.service";
+import { telegramStudyService } from "./telegram-study.service";
 import { logger } from "../utils/logger";
 import { schedulerRepository } from "../repositories/scheduler.repository";
 
@@ -16,6 +17,7 @@ export class SchedulerService {
 
       try {
         await notificationService.processHourlyNotifications();
+        await telegramStudyService.processHourlyQuestions();
         
         const durationMs = Date.now() - startTime;
         logger.info(`Finished hourly notification processing in ${durationMs}ms`);
