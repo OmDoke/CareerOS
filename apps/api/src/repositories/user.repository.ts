@@ -27,7 +27,6 @@ export class UserRepository {
         id: true,
         email: true,
         role: true,
-        currentRoadmapId: true,
         firstName: true,
         lastName: true,
       }
