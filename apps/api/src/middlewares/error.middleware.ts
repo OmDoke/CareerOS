@@ -3,7 +3,16 @@ import { logger } from "../utils/logger";
 import { AppError } from "../errors/custom-errors";
 
 export const errorMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
-  logger.error(err);
+  const errorContext = {
+    err,
+    userId: (req as any).user?.id,
+    reqId: req.id,
+    method: req.method,
+    url: req.originalUrl,
+  };
+
+  logger.error(errorContext, "API Error");
+
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ success: false, message: err.message, errors: err.errors });
   }

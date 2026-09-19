@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuthStore } from "../../store/auth.store";
-import { useResume } from "../../features/resume/hooks/useResume";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
 import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 import { Button } from "../../components/ui/button";
@@ -29,13 +28,12 @@ import { SkillRadar } from "../../features/analytics/components/SkillRadar";
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
-  const { data: resume, isLoading: isLoadingResume } = useResume();
-  const { data: todaySession, isLoading: isLoadingSession } = useTodaySession();
-  const { data: dashboardStats, isLoading: isLoadingStats } = useDashboardAnalytics();
-
   const hasRoadmap = !!user?.currentRoadmapId;
 
-  if (isLoadingResume || isLoadingSession || isLoadingStats) {
+  const { data: todaySession, isLoading: isLoadingSession } = useTodaySession(hasRoadmap);
+  const { data: dashboardStats, isLoading: isLoadingStats } = useDashboardAnalytics();
+
+  if (isLoadingSession || isLoadingStats) {
     return (
       <>
         <SpinnerSkeleton />
@@ -44,9 +42,9 @@ export default function DashboardPage() {
   }
 
   const steps = [
-    { id: 1, name: "Upload Resume", status: resume ? "complete" : "current", icon: FileText, href: "/resume" },
-    { id: 2, name: "AI Analysis", status: resume?.status === "ANALYZED" ? "complete" : resume ? "current" : "upcoming", icon: BrainCircuit, href: "/resume/analysis" },
-    { id: 3, name: "Generate Roadmap", status: hasRoadmap ? "complete" : resume?.status === "ANALYZED" ? "current" : "upcoming", icon: Map, href: "/roadmap" },
+    { id: 1, name: "Upload Resume", status: user?.hasResume ? "complete" : "current", icon: FileText, href: "/resume" },
+    { id: 2, name: "AI Analysis", status: user?.resumeStatus === "ANALYZED" ? "complete" : user?.hasResume ? "current" : "upcoming", icon: BrainCircuit, href: "/resume/analysis" },
+    { id: 3, name: "Generate Roadmap", status: hasRoadmap ? "complete" : user?.resumeStatus === "ANALYZED" ? "current" : "upcoming", icon: Map, href: "/roadmap" },
     { id: 4, name: "Today's Study", status: todaySession?.status === "COMPLETED" ? "complete" : hasRoadmap ? "current" : "upcoming", icon: CalendarDays, href: "/today" },
     { id: 5, name: "Practice", status: "upcoming", icon: Dumbbell, href: "/practice" },
     { id: 6, name: "Interview Readiness", status: "upcoming", icon: Target, href: "#" },
@@ -197,7 +195,7 @@ export default function DashboardPage() {
                       : "You need to generate a roadmap before starting a session."}
                   </p>
                   <Link href={hasRoadmap ? "/today" : "/roadmap"}>
-                    <Button size="lg" disabled={!resume}>
+                    <Button size="lg" disabled={!user?.hasResume}>
                       {hasRoadmap ? "Start Today's Session" : "Go to Roadmap"}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -230,7 +228,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 
-                {resume && (
+                {user?.hasResume && (
                   <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                     <div className="flex items-center justify-center w-5 h-5 rounded-full border-4 border-background bg-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2" />
                     <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.25rem)] p-3 rounded-lg border bg-card shadow-sm">

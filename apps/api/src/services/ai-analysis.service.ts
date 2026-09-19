@@ -1,7 +1,7 @@
 import { getResumeAnalysisPrompt } from "@career-os/prompts";
 import { aiProviderService } from "./ai-provider.service";
 import { resumeRepository } from "../repositories/resume.repository";
-import { NotFoundError, BadRequestError } from "../errors/custom-errors";
+import { NotFoundError, BadRequestError, AppError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
 
 export class AiAnalysisService {
@@ -22,8 +22,10 @@ export class AiAnalysisService {
 
     try {
       const prompt = getResumeAnalysisPrompt(resume.extractedText);
-      const { provider, model } = await aiProviderService.getProviderForUser(userId);
-      const structuredData = await provider.generateJSON(prompt, model);
+      const { provider } = await aiProviderService.getProviderForUser(userId);
+      // Force gemini-3.6-flash for resume parsing since it requires strict JSON structure 
+      // and we want to avoid quota limits or streaming-only errors from Pro/Live models.
+      const structuredData = await provider.generateJSON(prompt, "gemini-3.6-flash");
 
       // Save structured data — keys must match the prompt schema exactly
       const updatedResume = await resumeRepository.update(userId, {
@@ -48,8 +50,11 @@ export class AiAnalysisService {
 
       return updatedResume;
     } catch (error) {
+      if (error instanceof AppError || (error as any)?.statusCode) {
+        throw error;
+      }
       logger.error({ err: error }, "Failed to analyze resume");
-      throw new Error("Failed to analyze resume with AI.");
+      throw new AppError("Failed to analyze resume with AI.", 500);
     }
   }
 

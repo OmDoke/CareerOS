@@ -25,8 +25,8 @@ export function DeleteResumeDialog({ isOpen, onClose }: Props) {
         toast.success("Resume deleted successfully");
         onClose();
       },
-      onError: () => {
-        toast.error("Failed to delete resume");
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Failed to delete resume");
       }
     });
   };

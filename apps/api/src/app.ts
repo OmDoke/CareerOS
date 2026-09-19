@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware";
 import { logger } from "./utils/logger";
+import pinoHttp from "pino-http";
 
 import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
@@ -31,10 +32,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use((req, res, next) => {
-  logger.info({ method: req.method, url: req.url }, "API Request");
-  next();
-});
+app.use(pinoHttp({
+  logger,
+  customProps: (req) => ({
+    userId: (req as any).user?.id,
+  }),
+  autoLogging: {
+    ignore: (req) => req.url === "/api/v1/health", // Ignore noisy health checks
+  }
+}));
 
 import { sql } from "drizzle-orm";
 import { db } from "./db/database";

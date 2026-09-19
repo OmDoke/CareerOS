@@ -1,6 +1,7 @@
 import { AIProvider } from "./provider.interface";
 import { GeminiProvider } from "./gemini.provider";
 import { logger } from "../utils/logger";
+import { AppError } from "../errors/custom-errors";
 
 export class ProviderFactory {
   /**
@@ -9,7 +10,7 @@ export class ProviderFactory {
    */
   static createProvider(providerName: string, apiKey: string): AIProvider {
     if (!apiKey) {
-      throw new Error(`API Key is required to initialize provider ${providerName}`);
+      throw new AppError(`API Key is required to initialize provider ${providerName}`, 400);
     }
 
     switch (providerName.toUpperCase()) {
@@ -24,7 +25,7 @@ export class ProviderFactory {
       
       default:
         logger.error(`Unsupported provider requested: ${providerName}`);
-        throw new Error(`Unsupported AI Provider: ${providerName}`);
+        throw new AppError(`Unsupported AI Provider: ${providerName}`, 400);
     }
   }
 }

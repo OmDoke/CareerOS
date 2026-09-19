@@ -20,6 +20,20 @@ export class UserRepository {
     });
   }
 
+  async findAuthUserById(id: string) {
+    return db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.id, id),
+      columns: {
+        id: true,
+        email: true,
+        role: true,
+        currentRoadmapId: true,
+        firstName: true,
+        lastName: true,
+      }
+    });
+  }
+
   async update(id: string, data: any) {
     const result = await db.update(users)
       .set(data)

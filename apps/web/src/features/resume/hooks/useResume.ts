@@ -20,8 +20,8 @@ export const useUploadResume = () => {
         description: "Your resume is now being analyzed by AI.",
       });
     },
-    onError: () => {
-      toast.error("Failed to upload resume.");
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to upload resume.");
     }
   });
 };
@@ -47,9 +47,9 @@ export const useDeleteResume = () => {
       toast.success("Resume deleted successfully");
       return { previousResume };
     },
-    onError: (err, newTodo, context) => {
+    onError: (error: any, newTodo, context) => {
       queryClient.setQueryData(["resume"], context?.previousResume);
-      toast.error("Failed to delete resume");
+      toast.error(error.response?.data?.message || "Failed to delete resume");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["resume"] });

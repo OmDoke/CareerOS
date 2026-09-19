@@ -50,8 +50,8 @@ export function AIProviderCard() {
       if (res.data.exists && res.data.isConnected) {
         fetchModels();
       }
-    } catch {
-      toast.error("Failed to fetch AI settings");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to fetch AI settings");
     } finally {
       setLoading(false);
     }
@@ -64,8 +64,8 @@ export function AIProviderCard() {
       if (res.data.success) {
         setModels(res.data.models);
       }
-    } catch {
-      toast.error("Failed to fetch available models.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to fetch available models.");
     } finally {
       setFetchingModels(false);
     }
@@ -110,8 +110,8 @@ export function AIProviderCard() {
       });
       toast.success("Default model updated");
       setSettings((prev) => prev ? { ...prev, selectedModel: model } : null);
-    } catch {
-      toast.error("Failed to update model");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update model");
     }
   };
 
@@ -123,8 +123,8 @@ export function AIProviderCard() {
         toast.success(`Connection successful! Latency: ${res.data.latency}ms`, { id: loadingToast });
         setSettings((prev) => prev ? { ...prev, isConnected: true } : null);
       }
-    } catch {
-      toast.error("Connection failed. Check your API key.", { id: loadingToast });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Connection failed. Check your API key.", { id: loadingToast });
       setSettings((prev) => prev ? { ...prev, isConnected: false } : null);
     }
   };

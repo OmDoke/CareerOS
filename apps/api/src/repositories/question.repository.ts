@@ -92,7 +92,7 @@ export class QuestionRepository {
       if (topicMasteryDelta !== 0) {
         const topic = await tx.query.roadmapTopics.findFirst({ where: (t, { eq }) => eq(t.id, roadmapTopicId) });
         if (topic) {
-          const newMastery = Math.min(100, Math.max(0, topic.masteryPercentage + topicMasteryDelta));
+          const newMastery = Math.round(Math.min(100, Math.max(0, topic.masteryPercentage + topicMasteryDelta)));
           await tx.update(roadmapTopics).set({ masteryPercentage: newMastery }).where(eq(roadmapTopics.id, roadmapTopicId));
         }
       }

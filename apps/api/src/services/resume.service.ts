@@ -38,7 +38,7 @@ export class ResumeService {
 
     // Create Resume Record
     const resume = await resumeRepository.create({
-      user: { connect: { id: userId } },
+      userId,
       originalFileName,
       storedFileName,
       fileSize,

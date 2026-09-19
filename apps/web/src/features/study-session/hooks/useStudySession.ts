@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
 
-export function useTodaySession() {
+export function useTodaySession(enabled: boolean = true) {
   return useQuery({
     queryKey: ["study-session", "today"],
     queryFn: async () => {
@@ -9,6 +9,7 @@ export function useTodaySession() {
       return response.data.data.session;
     },
     retry: false,
+    enabled,
   });
 }
 

@@ -25,7 +25,7 @@ export class QuestionGeneratorService {
 
       // Validate structure
       if (!generatedData.question || !generatedData.type || !generatedData.difficulty) {
-        throw new Error("Invalid output format from Gemini");
+        throw new AppError("Invalid output format from Gemini", 500);
       }
 
       return {
@@ -36,6 +36,7 @@ export class QuestionGeneratorService {
         options: Array.isArray(generatedData.options) ? generatedData.options : null,
       };
     } catch (error) {
+      if (error instanceof AppError || (error as any)?.statusCode) throw error;
       logger.error({ err: error }, "Failed to generate question with AI");
       throw new AppError("Failed to generate dynamic question.", 500);
     }
@@ -48,11 +49,12 @@ export class QuestionGeneratorService {
       const generatedData = await provider.generateJSON(prompt, model);
 
       if (!generatedData.hint) {
-        throw new Error("Invalid hint format from Gemini");
+        throw new AppError("Invalid hint format from Gemini", 500);
       }
 
       return generatedData.hint;
     } catch (error) {
+      if (error instanceof AppError || (error as any)?.statusCode) throw error;
       logger.error({ err: error }, "Failed to generate hint with AI");
       throw new AppError("Failed to generate hint.", 500);
     }
@@ -65,11 +67,12 @@ export class QuestionGeneratorService {
       const generatedData = await provider.generateJSON(prompt, model);
 
       if (!generatedData.explanation) {
-        throw new Error("Invalid explanation format from Gemini");
+        throw new AppError("Invalid explanation format from Gemini", 500);
       }
 
       return generatedData.explanation;
     } catch (error) {
+      if (error instanceof AppError || (error as any)?.statusCode) throw error;
       logger.error({ err: error }, "Failed to generate explanation with AI");
       throw new AppError("Failed to generate explanation.", 500);
     }

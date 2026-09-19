@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../lib/api";
+import { toast } from "sonner";
 
 export function useAiAnalysis() {
   return useQuery({
@@ -22,6 +23,15 @@ export function useAnalyzeResume() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resume"] });
+      toast.success("Resume analyzed successfully!");
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message;
+      if (error.response?.status === 403 && message === "AI_PROVIDER_NOT_CONFIGURED") {
+        toast.error("Please set your Gemini API key in Settings to use AI features.");
+      } else {
+        toast.error(message || "Failed to analyze resume. Please try again.");
+      }
     },
   });
 }

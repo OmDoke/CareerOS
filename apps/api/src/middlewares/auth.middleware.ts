@@ -27,7 +27,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       throw new UnauthorizedError("Invalid token payload");
     }
 
-    const user = await userRepository.findById(decoded.userId);
+    const user = await userRepository.findAuthUserById(decoded.userId);
 
     if (!user) {
       throw new UnauthorizedError("User not found");

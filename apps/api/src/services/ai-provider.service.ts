@@ -22,7 +22,10 @@ export const aiProviderService = {
       const decryptedKey = cryptoService.decrypt(settings.encryptedApiKey);
       const provider = ProviderFactory.createProvider(settings.provider, decryptedKey);
       
-      const defaultModel = settings.selectedModel || "gemini-3.6-flash";
+      let defaultModel = settings.selectedModel || "gemini-3.6-flash";
+      if (defaultModel.includes("gemini-2.5-flash")) {
+        defaultModel = "gemini-3.6-flash";
+      }
       
       return { provider, model: defaultModel };
     } catch (error) {

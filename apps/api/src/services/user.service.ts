@@ -13,8 +13,17 @@ export class UserService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
+    
+    // Check if user has uploaded a resume
+    const { resumeRepository } = await import("../repositories/resume.repository");
+    const resume = await resumeRepository.findByUserId(userId);
+    
     const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return {
+      ...userWithoutPassword,
+      hasResume: !!resume,
+      resumeStatus: resume?.status || null
+    };
   }
 
   async updateProfile(userId: string, data: UpdateProfileInput) {

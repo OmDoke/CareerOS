@@ -2,7 +2,7 @@ import { getRoadmapGeneratorPrompt } from "@career-os/prompts";
 import { aiProviderService } from "./ai-provider.service";
 import { roadmapRepository } from "../repositories/roadmap.repository";
 import { resumeRepository } from "../repositories/resume.repository";
-import { NotFoundError, BadRequestError } from "../errors/custom-errors";
+import { NotFoundError, BadRequestError, AppError } from "../errors/custom-errors";
 import { logger } from "../utils/logger";
 
 export class RoadmapService {
@@ -46,8 +46,11 @@ export class RoadmapService {
       const roadmap = await roadmapRepository.create(userId, structuredRoadmap);
       return roadmap;
     } catch (error) {
+      if (error instanceof AppError || (error as any)?.statusCode) {
+        throw error;
+      }
       logger.error({ err: error }, "Failed to generate roadmap");
-      throw new Error("Failed to generate learning roadmap with AI.");
+      throw new AppError("Failed to generate learning roadmap with AI.", 500);
     }
   }
 

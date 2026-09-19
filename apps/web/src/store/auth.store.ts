@@ -9,6 +9,8 @@ interface User {
   avatar: string | null;
   role: string;
   currentRoadmapId?: string;
+  hasResume?: boolean;
+  resumeStatus?: string | null;
 }
 
 interface AuthState {
