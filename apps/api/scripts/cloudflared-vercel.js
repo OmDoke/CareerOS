@@ -7,6 +7,7 @@ const PORT = 3001; // The port your local API runs on
 const VERCEL_ENV_NAME = 'CONFIG_API_URL'; // The env var to update in Vercel
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID; // Set this in your .env or system env
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN; // Set this in your .env or system env
+const VERCEL_DEPLOY_HOOK_URL = process.env.VERCEL_DEPLOY_HOOK_URL; // Set this in your .env to auto-deploy
 
 // Target environments in Vercel (e.g. ['production', 'preview', 'development'])
 const TARGET_ENVIRONMENTS = ['production', 'preview', 'development']; 
@@ -30,7 +31,7 @@ cloudflared.stderr.on('data', (data) => {
     // Regex to match the Cloudflare tunnel URL
     const match = output.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
     if (match) {
-      const url = match[0];
+      const url = match[0] + '/api/v1';
       urlFound = true;
       console.log(`\n✅ Cloudflare Tunnel URL found: ${url}`);
       
@@ -72,7 +73,15 @@ async function updateVercelEnv(url) {
     });
 
     console.log(`🎉 Successfully updated ${VERCEL_ENV_NAME} in Vercel!`);
-    console.log(`⚠️ Note: You will need to trigger a new deployment in Vercel for the Next.js app to pick up this new URL.`);
+    
+    if (VERCEL_DEPLOY_HOOK_URL) {
+      console.log(`🚀 Triggering Vercel Redeployment via Deploy Hook...`);
+      await fetch(VERCEL_DEPLOY_HOOK_URL, { method: 'POST' });
+      console.log(`✅ Redeployment triggered successfully! Your Next.js app will be updated shortly.`);
+    } else {
+      console.log(`⚠️ Note: You will need to trigger a new deployment in Vercel for the Next.js app to pick up this new URL.`);
+      console.log(`💡 Tip: Add a VERCEL_DEPLOY_HOOK_URL to your .env file to automate the deployment too!`);
+    }
 
   } catch (error) {
     console.error(`❌ Failed to update Vercel: ${error.message}`);
