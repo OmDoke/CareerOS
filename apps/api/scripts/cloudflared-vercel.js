@@ -1,5 +1,6 @@
 const { spawn, execSync } = require('child_process');
 const https = require('https');
+require('dotenv').config();
 
 // --- CONFIGURATION ---
 const PORT = 3001; // The port your local API runs on
