@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "tunnel": "node ../../scripts/cloudflared-vercel.js",
+    "tunnel": "node scripts/cloudflared-vercel.js",
     "dev:tunnel": "npx concurrently \"npm run dev\" \"npm run tunnel\"",
     "start:tunnel": "npx concurrently \"npm run start\" \"npm run tunnel\"",
     "build": "tsc",
