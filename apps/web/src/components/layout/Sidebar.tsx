@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { cn } from "../../lib/utils";
+import { useRoadmap } from "../../features/roadmap/hooks/useRoadmap";
+import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -29,6 +31,9 @@ export function Sidebar() {
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.clearAuth);
+  
+  const { data: roadmapData } = useRoadmap();
+  const { data: dashboardStats } = useDashboardAnalytics();
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] border-r bg-card min-h-screen px-4 py-6 sticky top-0 h-screen overflow-y-auto">
@@ -79,23 +84,23 @@ export function Sidebar() {
             <div>
               <div className="flex justify-between text-xs mb-1 font-medium">
                 <span className="text-muted-foreground">Target Role</span>
-                <span>SWE</span>
+                <span className="truncate ml-2">{roadmapData?.targetRole || "Not set"}</span>
               </div>
             </div>
             <div>
               <div className="flex justify-between text-xs mb-1 font-medium">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="text-primary">12%</span>
+                <span className="text-primary">{roadmapData ? "In Progress" : "0%"}</span>
               </div>
               <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
-                <div className="h-full bg-primary w-[12%]" />
+                <div className="h-full bg-primary transition-all" style={{ width: roadmapData ? "33%" : "0%" }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-muted-foreground">Daily Streak</span>
                 <span className="text-orange-500 font-bold flex items-center">
-                  🔥 3 days
+                  🔥 {dashboardStats?.currentStreak || 0} days
                 </span>
               </div>
             </div>

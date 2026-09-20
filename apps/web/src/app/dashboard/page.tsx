@@ -26,14 +26,19 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
 import { SkillRadar } from "../../features/analytics/components/SkillRadar";
 
+import { useRoadmap } from "../../features/roadmap/hooks/useRoadmap";
+import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
+
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
-  const hasRoadmap = !!user?.currentRoadmapId;
+  
+  const { data: roadmapData, isLoading: isLoadingRoadmap } = useRoadmap();
+  const hasRoadmap = !!roadmapData;
 
   const { data: todaySession, isLoading: isLoadingSession } = useTodaySession(hasRoadmap);
   const { data: dashboardStats, isLoading: isLoadingStats } = useDashboardAnalytics();
 
-  if (isLoadingSession || isLoadingStats) {
+  if (isLoadingSession || isLoadingStats || isLoadingRoadmap) {
     return (
       <>
         <SpinnerSkeleton />
