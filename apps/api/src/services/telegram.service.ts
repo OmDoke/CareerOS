@@ -5,6 +5,7 @@ import { notificationRepository } from "../repositories/notification.repository"
 import { logger } from "../utils/logger";
 import { naukriService } from "./naukri.service";
 import { evaluationService } from "./evaluation.service";
+import { telegramStudyService } from "./telegram-study.service";
 import { db } from "../db/database";
 import crypto from "crypto";
 
@@ -85,6 +86,19 @@ export class TelegramService {
         await telegramProvider.sendMessage(chatId, `✅ ${result.message}`);
       } else {
         await telegramProvider.sendMessage(chatId, `❌ ${result.message}`);
+      }
+    });
+
+    // Add a manual trigger for testing the hourly study question
+    bot.onText(/\/teststudy/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      await telegramProvider.sendMessage(chatId, "🔄 Forcing hourly study question generation for testing...");
+      try {
+        await telegramStudyService.processHourlyQuestions();
+        await telegramProvider.sendMessage(chatId, "✅ Hourly processing complete. Check for new messages!");
+      } catch (err: any) {
+        logger.error({ err }, "Test trigger failed");
+        await telegramProvider.sendMessage(chatId, "❌ Failed to generate test study question.");
       }
     });
 
