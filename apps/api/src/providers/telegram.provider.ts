@@ -12,7 +12,7 @@ export class TelegramProvider {
 
   private init() {
     // Check if token exists
-    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const token = env.TELEGRAM_BOT_TOKEN;
     if (!token) {
       logger.warn("TELEGRAM_BOT_TOKEN is not set. Telegram features will be disabled.");
       return;

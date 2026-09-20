@@ -8,6 +8,7 @@ import { evaluationService } from "./evaluation.service";
 import { telegramStudyService } from "./telegram-study.service";
 import { db } from "../db/database";
 import crypto from "crypto";
+import { env } from "../config/env";
 
 export class TelegramService {
   constructor() {
@@ -67,7 +68,7 @@ export class TelegramService {
 
     bot.onText(/\/naukri/, async (msg: any) => {
       const chatId = msg.chat.id.toString();
-      const allowedId = process.env.TELEGRAM_ALLOWED_USER_ID;
+      const allowedId = env.TELEGRAM_ALLOWED_USER_ID;
 
       // Ensure authorized access
       if (allowedId && chatId !== allowedId) {

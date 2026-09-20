@@ -9,6 +9,11 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("7d"),
   ENCRYPTION_KEY: z.string().optional().default(""),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
+  LOG_LEVEL: z.string().default("info"),
+  GEMINI_API_KEY: z.string().optional(),
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_BOT_USERNAME: z.string().optional(),
+  TELEGRAM_ALLOWED_USER_ID: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
