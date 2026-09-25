@@ -68,20 +68,16 @@ export class TelegramService {
 
     bot.onText(/\/naukri/, async (msg: any) => {
       const chatId = msg.chat.id.toString();
-      const allowedId = env.TELEGRAM_ALLOWED_USER_ID;
-
-      // Ensure authorized access
-      if (allowedId && chatId !== allowedId) {
-        // Fallback: Check if they are connected to CareerOS
-        const user = await userRepository.findByTelegramId(chatId);
-        if (!user) {
-          await telegramProvider.sendMessage(chatId, "❌ Unauthorized. You must connect your CareerOS account or be the designated admin to use this command.");
-          return;
-        }
+      
+      const user = await userRepository.findByTelegramId(chatId);
+      if (!user) {
+        await telegramProvider.sendMessage(chatId, "❌ Unauthorized. You must connect your CareerOS account via the web dashboard to use this command.");
+        return;
       }
 
-      await telegramProvider.sendMessage(chatId, "🔄 Starting Naukri profile refresh...");
-      const result = await naukriService.updateProfileSummary();
+      await telegramProvider.sendMessage(chatId, "🔄 Starting Naukri profile refresh using your saved credentials...");
+      const result = await naukriService.updateProfileSummary(user.id);
+
       
       if (result.success) {
         await telegramProvider.sendMessage(chatId, `✅ ${result.message}`);

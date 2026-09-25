@@ -27,7 +27,6 @@ import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
 import { SkillRadar } from "../../features/analytics/components/SkillRadar";
 
 import { useRoadmap } from "../../features/roadmap/hooks/useRoadmap";
-import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);

@@ -3,9 +3,11 @@ import { notificationService } from "./notification.service";
 import { telegramStudyService } from "./telegram-study.service";
 import { logger } from "../utils/logger";
 import { schedulerRepository } from "../repositories/scheduler.repository";
+import { jobNotificationService } from "./job-notification.service";
 
 export class SchedulerService {
   private hourlyJob: cron.ScheduledTask | null = null;
+  private dailyJob: cron.ScheduledTask | null = null;
 
   public start() {
     logger.info("Initializing SchedulerService...");
@@ -46,15 +48,27 @@ export class SchedulerService {
         });
       }
     });
+    // Run every day at 9:00 AM
+    this.dailyJob = cron.schedule("0 9 * * *", async () => {
+      logger.info("Starting daily job notification processing...");
+      try {
+        await jobNotificationService.processDailyJobAlerts();
+      } catch (error: any) {
+        logger.error({ err: error }, "Error during daily job alerts processing");
+      }
+    });
 
-    logger.info("SchedulerService started. Hourly jobs registered.");
+    logger.info("SchedulerService started. Hourly and daily jobs registered.");
   }
 
   public stop() {
     if (this.hourlyJob) {
       this.hourlyJob.stop();
-      logger.info("SchedulerService stopped.");
     }
+    if (this.dailyJob) {
+      this.dailyJob.stop();
+    }
+    logger.info("SchedulerService stopped.");
   }
 }
 

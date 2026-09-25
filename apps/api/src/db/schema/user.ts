@@ -27,6 +27,16 @@ export const users = pgTable('User', {
   telegramConnected: boolean('telegramConnected').default(false).notNull(),
   telegramConnectedAt: timestamp('telegramConnectedAt', { mode: 'date', precision: 3 }),
 
+  // Integrations: Naukri Auto-Updater
+  naukriUsername: text('naukriUsername'),
+  naukriPassword: text('naukriPassword'), // Store encrypted in a real prod env
+  naukriSummary: text('naukriSummary'),
+  naukriState: boolean('naukriState').default(false).notNull(), // Replaces local .naukristate file
+
+  // Integrations: Job Scraper
+  jobScraperUrl: text('jobScraperUrl'),
+  jobScraperLocation: text('jobScraperLocation'),
+
   createdAt: timestamp('createdAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });

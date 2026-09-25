@@ -1,6 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
 import { logger } from "../utils/logger";
+import { db } from "../db/database";
+import { eq } from "drizzle-orm";
+import { users } from "../db/schema";
 
 const LOGIN_URL = "https://www.naukri.com/central-login-services/v1/login";
 const DASHBOARD_URL = "https://www.naukri.com/cloudgateway-mynaukri/resman-aggregator-services/v0/users/self/dashboard";
@@ -17,35 +18,25 @@ const DEFAULT_HEADERS = {
 };
 
 export class NaukriService {
-  private stateFilePath = path.join(process.cwd(), ".naukristate");
-
-  private async getState(): Promise<boolean> {
+  public async updateProfileSummary(userId: string): Promise<{ success: boolean; message: string }> {
     try {
-      const content = await fs.readFile(this.stateFilePath, "utf-8");
-      return content.trim() === "1";
-    } catch {
-      return false;
-    }
-  }
+      // Fetch user and their naukri credentials from DB
+      const user = await db.query.users.findFirst({
+        where: (u, { eq }) => eq(u.id, userId),
+      });
 
-  private async saveState(state: boolean): Promise<void> {
-    try {
-      await fs.writeFile(this.stateFilePath, state ? "1" : "0", "utf-8");
-    } catch (error) {
-      logger.error({ err: error }, "Failed to save Naukri state");
-    }
-  }
+      if (!user) {
+        return { success: false, message: "User not found." };
+      }
 
-  public async updateProfileSummary(): Promise<{ success: boolean; message: string }> {
-    const username = process.env.NAUKRI_USERNAME;
-    const password = process.env.NAUKRI_PASSWORD;
-    const baseSummary = process.env.NAUKRI_BASE_SUMMARY || "Software Engineer passionate about building scalable backends and intelligent systems.";
+      const username = user.naukriUsername;
+      const password = user.naukriPassword; // In production, decrypt this first
+      const baseSummary = user.naukriSummary || "Software Engineer passionate about building scalable backends and intelligent systems.";
 
-    if (!username || !password) {
-      return { success: false, message: "NAUKRI_USERNAME or NAUKRI_PASSWORD is not set." };
-    }
+      if (!username || !password) {
+        return { success: false, message: "Naukri credentials not configured in settings." };
+      }
 
-    try {
       // 1. Login
       const loginRes = await fetch(LOGIN_URL, {
         method: "POST",
@@ -57,7 +48,6 @@ export class NaukriService {
         throw new Error(`Login failed with status ${loginRes.status}`);
       }
 
-      // Extract set-cookie for "nauk_at"
       const setCookieHeader = loginRes.headers.get("set-cookie") || "";
       const cookiesArray = Array.isArray(setCookieHeader) ? setCookieHeader : setCookieHeader.split(/,(?=\s*[a-zA-Z0-9_-]+\=)/);
       let token = "";
@@ -100,7 +90,7 @@ export class NaukriService {
       }
 
       // 3. Update Summary
-      const hasSpace = await this.getState();
+      const hasSpace = user.naukriState || false;
       const newState = !hasSpace;
       const newSummary = newState ? `${baseSummary} ` : baseSummary;
 
@@ -121,7 +111,7 @@ export class NaukriService {
       };
 
       const updateRes = await fetch(PROFILE_UPDATE_URL, {
-        method: "POST", // HTTP method override is PUT
+        method: "POST", 
         headers: updateHeaders as any,
         body: JSON.stringify(updatePayload),
       });
@@ -130,8 +120,8 @@ export class NaukriService {
         throw new Error(`Profile update failed with status ${updateRes.status}`);
       }
 
-      // 4. Save state
-      await this.saveState(newState);
+      // 4. Save state in DB instead of file
+      await db.update(users).set({ naukriState: newState }).where(eq(users.id, userId));
 
       return {
         success: true,

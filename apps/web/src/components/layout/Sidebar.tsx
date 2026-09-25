@@ -8,7 +8,9 @@ import {
   Dumbbell, 
   Settings, 
   LogOut,
-  User
+  User,
+  Briefcase,
+  RefreshCw
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { cn } from "../../lib/utils";
@@ -21,6 +23,8 @@ const NAV_ITEMS = [
   { name: "Roadmap", href: "/roadmap", icon: Map },
   { name: "Today", href: "/today", icon: CalendarDays },
   { name: "Practice", href: "/practice", icon: Dumbbell },
+  { name: "Job Scraper", href: "/job-scraper", icon: Briefcase },
+  { name: "Naukri Updater", href: "/naukri-updater", icon: RefreshCw },
 ];
 
 const BOTTOM_NAV_ITEMS = [
