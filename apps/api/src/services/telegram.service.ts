@@ -9,6 +9,8 @@ import { telegramStudyService } from "./telegram-study.service";
 import { db } from "../db/database";
 import crypto from "crypto";
 import { env } from "../config/env";
+import { jobNotificationService } from "./job-notification.service";
+
 
 export class TelegramService {
   constructor() {
@@ -96,6 +98,53 @@ export class TelegramService {
       } catch (err: any) {
         logger.error({ err }, "Test trigger failed");
         await telegramProvider.sendMessage(chatId, "❌ Failed to generate test study question.");
+      }
+    });
+
+    bot.onText(/\/jobs/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      const user = await userRepository.findByTelegramId(chatId);
+      if (!user) {
+        await telegramProvider.sendMessage(chatId, "❌ Unauthorized. You must connect your CareerOS account via the web dashboard to use this command.");
+        return;
+      }
+
+      await telegramProvider.sendMessage(chatId, "🔍 Scraping the web for jobs matching your resume... Please wait.");
+      try {
+        const result = await jobNotificationService.processDailyJobAlerts(user.id);
+        if (!result?.success) {
+          await telegramProvider.sendMessage(chatId, `❌ ${result?.message || 'No jobs found today.'}`);
+        }
+      } catch (error) {
+        logger.error({ err: error, userId: user.id }, "Failed to run on-demand job alert");
+        await telegramProvider.sendMessage(chatId, "❌ Failed to scrape jobs. Please try again later.");
+      }
+    });
+
+    bot.onText(/\/blogs/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      await telegramProvider.sendMessage(chatId, "📰 Fetching today's top tech blogs...");
+      
+      try {
+        const response = await fetch("https://dev.to/api/articles?tag=programming&top=1&per_page=3");
+        const articles = await response.json();
+        
+        if (!articles || articles.length === 0) {
+          await telegramProvider.sendMessage(chatId, "❌ No interesting blogs found right now.");
+          return;
+        }
+
+        let message = `🚀 *Today's Top Tech Reads*\n\n`;
+        articles.forEach((article: any, index: number) => {
+          message += `${index + 1}. *${article.title}*\n`;
+          message += `✍️ _By ${article.user?.name}_ | ❤️ ${article.public_reactions_count} reactions\n`;
+          message += `🔗 [Read Article](${article.url})\n\n`;
+        });
+
+        await telegramProvider.sendMessage(chatId, message, { disable_web_page_preview: false, parse_mode: "Markdown" });
+      } catch (error) {
+        logger.error({ err: error }, "Failed to fetch blogs");
+        await telegramProvider.sendMessage(chatId, "❌ Failed to fetch tech blogs. Please try again later.");
       }
     });
 

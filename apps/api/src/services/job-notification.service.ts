@@ -1,6 +1,7 @@
 import { db } from "../db/database";
 import { telegramProvider } from "../providers/telegram.provider";
 import { logger } from "../utils/logger";
+import { resumeTailorService } from "./resume-tailor.service";
 
 export class JobNotificationService {
   async fetchJobsForUser(url: string, location: string) {
@@ -13,12 +14,19 @@ export class JobNotificationService {
       // Handle different standard API response formats (Arbeitnow vs RapidAPI)
       let jobs = data.data || data.jobs || data.results || [];
       
-      // If a specific location is set and it's not remote, try to pre-filter
-      if (location && location.toLowerCase() !== "remote") {
-        jobs = jobs.filter((j: any) => 
-          (j.location && j.location.toLowerCase().includes(location.toLowerCase())) ||
-          (j.title && j.title.toLowerCase().includes(location.toLowerCase()))
-        );
+      // Filter by multi-select locations (e.g., "remote,pune")
+      if (location) {
+        const targetLocations = location.toLowerCase().split(",").map(l => l.trim());
+        
+        jobs = jobs.filter((j: any) => {
+          const jobLoc = (j.location || "").toLowerCase();
+          const jobTitle = (j.title || "").toLowerCase();
+          
+          // Keep the job if it matches AT LEAST ONE of the selected locations
+          return targetLocations.some(loc => 
+            jobLoc.includes(loc) || jobTitle.includes(loc)
+          );
+        });
       }
       
       return jobs; 
@@ -28,11 +36,13 @@ export class JobNotificationService {
     }
   }
 
-  async processDailyJobAlerts() {
-    logger.info("Starting daily Job Notification processing...");
+  async processDailyJobAlerts(targetUserId?: string) {
+    logger.info(`Starting Job Notification processing${targetUserId ? ' for user ' + targetUserId : ''}...`);
 
     const users = await db.query.users.findMany({
-      where: (u, { eq }) => eq(u.telegramConnected, true),
+      where: (u, { eq, and }) => targetUserId 
+        ? and(eq(u.telegramConnected, true), eq(u.id, targetUserId))
+        : eq(u.telegramConnected, true),
       with: {
         roadmap: true,
         resume: true, // Fetch user resume for keywords
@@ -40,9 +50,11 @@ export class JobNotificationService {
     });
 
     if (users.length === 0) {
-      logger.info("No users with Telegram connected for job alerts.");
-      return;
+      logger.info(targetUserId ? `User ${targetUserId} not found or not connected.` : "No users with Telegram connected for job alerts.");
+      return { success: false, message: "No matching users found or you are not connected." };
     }
+
+    let totalMatches = 0;
 
     for (const user of users) {
       if (!user.telegramChatId) continue;
@@ -83,13 +95,62 @@ export class JobNotificationService {
         const personalizedMsg = `Hi! I found jobs matching the skills in your resume (*${keywords.slice(0,4).join(", ")}...*) for a *${role}*:\n\n` + jobMessage;
         
         await telegramProvider.sendMessage(user.telegramChatId, personalizedMsg, { disable_web_page_preview: true });
+
+        // Generate tailored resume for the best matching job
+        if (matchedJobs.length > 0) {
+          const topJob = matchedJobs[0];
+          try {
+            await telegramProvider.sendMessage(user.telegramChatId, `🤖 Generating a tailored AI cover letter and resume for the top match: *${topJob.title}*...`);
+            
+            const jobDescription = `${topJob.title} - ${topJob.description || ""}`;
+            const tailoredData = await resumeTailorService.tailorResume(user.id, jobDescription);
+            
+            // Generate PDF Buffer
+            const personalInfo = {
+              name: user.resume?.name || 'Candidate',
+              title: role,
+              email: user.resume?.email || user.email,
+              phone: user.resume?.phone || ''
+            };
+            
+            const pdfBuffer = await resumeTailorService.generatePdfBuffer(personalInfo, tailoredData);
+            
+            // Send the tailored cover letter (summary) + PDF
+            let letterMsg = `🎯 *Tailored Cover Letter for ${topJob.company_name}*\n\n`;
+            letterMsg += `*Summary:*\n${tailoredData.tailoredSummary}\n\n`;
+            letterMsg += `*Match Score:* ${tailoredData.matchScore}%\n`;
+            if (tailoredData.missingKeywords && tailoredData.missingKeywords.length > 0) {
+              letterMsg += `*Missing Keywords:* ${tailoredData.missingKeywords.join(", ")}\n`;
+            }
+
+            await telegramProvider.sendMessage(user.telegramChatId, letterMsg);
+            
+            // Provide PDF via generic document send method of node-telegram-bot-api
+            const bot = telegramProvider.getBot();
+            if (bot) {
+              await bot.sendDocument(user.telegramChatId, pdfBuffer, {}, {
+                filename: 'Tailored_Resume.pdf',
+                contentType: 'application/pdf'
+              });
+            }
+          } catch (pdfError) {
+            logger.error({ err: pdfError, userId: user.id }, "Failed to generate and send tailored PDF");
+            await telegramProvider.sendMessage(user.telegramChatId, "❌ Failed to generate tailored PDF. Please check your resume analysis status.");
+          }
+        }
+
         logger.info(`Sent job notification to user ${user.id}`);
+        totalMatches++;
       } catch (error) {
         logger.error({ err: error, userId: user.id }, "Failed to send job notification to user");
       }
     }
 
-    logger.info("Finished daily Job Notification processing.");
+    logger.info("Finished Job Notification processing.");
+    return { 
+      success: true, 
+      message: totalMatches > 0 ? `Found and sent matches for ${totalMatches} users.` : "No jobs matched your skills today." 
+    };
   }
 }
 

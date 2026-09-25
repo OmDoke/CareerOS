@@ -10,7 +10,16 @@ export default function JobScraperPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [url, setUrl] = useState("https://www.arbeitnow.com/api/job-board-api");
-  const [location, setLocation] = useState("remote");
+  const [locations, setLocations] = useState<string[]>(["remote"]);
+
+  const handleLocationToggle = (loc: string) => {
+    setLocations(prev => 
+      prev.includes(loc) 
+        ? prev.filter(l => l !== loc)
+        : [...prev, loc]
+    );
+  };
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +28,7 @@ export default function JobScraperPage() {
     try {
       await api.post("/settings/integrations/job-scraper", {
         url,
-        location,
+        location: locations.join(","),
       });
       setIsSaved(true);
       toast.success("Job scraper configuration saved successfully!");
@@ -71,17 +80,18 @@ export default function JobScraperPage() {
                   {["remote", "pune", "mumbai", "bangalore"].map((loc) => (
                     <label 
                       key={loc}
+                      onClick={() => handleLocationToggle(loc)}
                       className={`
                         relative flex cursor-pointer rounded-lg border bg-background p-4 shadow-sm hover:bg-secondary/50 transition-colors
-                        ${location === loc ? "border-primary ring-1 ring-primary bg-primary/5" : "border-input"}
+                        ${locations.includes(loc) ? "border-primary ring-1 ring-primary bg-primary/5" : "border-input"}
                       `}
                     >
                       <input 
-                        type="radio" 
+                        type="checkbox" 
                         name="location" 
                         value={loc} 
-                        checked={location === loc}
-                        onChange={(e) => setLocation(e.target.value)}
+                        checked={locations.includes(loc)}
+                        readOnly
                         className="sr-only" 
                       />
                       <span className="flex flex-1">
