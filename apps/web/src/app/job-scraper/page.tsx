@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AppLayout } from "../../components/layout/AppLayout";
 import { Briefcase, Save, CheckCircle2, Link as LinkIcon, MapPin, RefreshCw } from "lucide-react";
 import { api } from "../../lib/api";
 import { toast } from "sonner";
+
 
 export default function JobScraperPage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -32,9 +32,8 @@ export default function JobScraperPage() {
   };
 
   return (
-    <AppLayout>
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             <Briefcase className="h-8 w-8 text-primary" />
             Job Scraper Configuration
@@ -115,9 +114,8 @@ export default function JobScraperPage() {
                 </button>
               </div>
             </form>
-          </div>
         </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

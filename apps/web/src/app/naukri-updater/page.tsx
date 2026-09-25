@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AppLayout } from "../../components/layout/AppLayout";
 import { RefreshCw, Save, CheckCircle2, User, Lock, FileText, AlertCircle } from "lucide-react";
 import { api } from "../../lib/api";
 import { toast } from "sonner";
+
 
 export default function NaukriUpdaterPage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -35,9 +35,8 @@ export default function NaukriUpdaterPage() {
   };
 
   return (
-    <AppLayout>
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             <RefreshCw className="h-8 w-8 text-primary" />
             Naukri Auto-Updater
@@ -117,9 +116,8 @@ export default function NaukriUpdaterPage() {
                 </button>
               </div>
             </form>
-          </div>
         </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }
