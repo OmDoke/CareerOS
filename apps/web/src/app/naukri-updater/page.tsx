@@ -3,20 +3,35 @@
 import { useState } from "react";
 import { AppLayout } from "../../components/layout/AppLayout";
 import { RefreshCw, Save, CheckCircle2, User, Lock, FileText, AlertCircle } from "lucide-react";
+import { api } from "../../lib/api";
+import { toast } from "sonner";
 
 export default function NaukriUpdaterPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [profileSummary, setProfileSummary] = useState("");
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    
+    try {
+      await api.post("/settings/integrations/naukri", {
+        email,
+        password,
+        profileSummary,
+      });
       setIsSaved(true);
+      toast.success("Naukri credentials saved successfully!");
       setTimeout(() => setIsSaved(false), 3000);
-    }, 1000);
+    } catch (error) {
+      toast.error("Failed to save credentials.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -43,6 +58,8 @@ export default function NaukriUpdaterPage() {
                     <input 
                       type="email" 
                       required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="your.email@example.com" 
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10" 
                     />
@@ -56,6 +73,8 @@ export default function NaukriUpdaterPage() {
                     <input 
                       type="password" 
                       required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••" 
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10" 
                     />
@@ -69,6 +88,8 @@ export default function NaukriUpdaterPage() {
                   <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <textarea 
                     required
+                    value={profileSummary}
+                    onChange={(e) => setProfileSummary(e.target.value)}
                     placeholder="Software Engineer passionate about building scalable backends and intelligent systems..." 
                     className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10 pt-2.5" 
                   />

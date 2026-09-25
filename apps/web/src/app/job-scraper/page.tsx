@@ -3,21 +3,32 @@
 import { useState } from "react";
 import { AppLayout } from "../../components/layout/AppLayout";
 import { Briefcase, Save, CheckCircle2, Link as LinkIcon, MapPin, RefreshCw } from "lucide-react";
+import { api } from "../../lib/api";
+import { toast } from "sonner";
 
 export default function JobScraperPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [url, setUrl] = useState("https://www.arbeitnow.com/api/job-board-api");
   const [location, setLocation] = useState("remote");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    
+    try {
+      await api.post("/settings/integrations/job-scraper", {
+        url,
+        location,
+      });
       setIsSaved(true);
+      toast.success("Job scraper configuration saved successfully!");
       setTimeout(() => setIsSaved(false), 3000);
-    }, 1000);
+    } catch (error) {
+      toast.error("Failed to save configuration.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -44,7 +55,8 @@ export default function JobScraperPage() {
                   <input 
                     type="url" 
                     required
-                    defaultValue="https://www.arbeitnow.com/api/job-board-api"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://api.example.com/jobs" 
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10" 
                   />

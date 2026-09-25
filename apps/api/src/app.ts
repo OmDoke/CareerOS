@@ -18,6 +18,7 @@ import analyticsRoutes from "./routes/analytics.routes";
 import telegramRoutes from "./routes/telegram.routes";
 import notificationRoutes from "./routes/notification.routes";
 import { aiSettingsRouter } from "./routes/ai-settings.routes";
+import integrationRoutes from "./routes/integration.routes";
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use("/api/v1/analytics", analyticsRoutes);
 app.use("/api/v1/telegram", telegramRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/settings/ai", aiSettingsRouter);
+app.use("/api/v1/settings/integrations", integrationRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
