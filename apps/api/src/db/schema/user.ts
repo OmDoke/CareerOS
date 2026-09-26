@@ -37,6 +37,11 @@ export const users = pgTable('User', {
   jobScraperUrl: text('jobScraperUrl'),
   jobScraperLocation: text('jobScraperLocation'),
 
+  // Integrations: RapidAPI Job Scraper
+  rapidApiUrl: text('rapidApiUrl'),
+  rapidApiKey: text('rapidApiKey'),
+  rapidApiHost: text('rapidApiHost'),
+
   createdAt: timestamp('createdAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updatedAt', { mode: 'date', precision: 3 }).$defaultFn(() => new Date()).$onUpdate(() => new Date()).notNull(),
 });

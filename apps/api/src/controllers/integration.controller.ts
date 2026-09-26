@@ -44,3 +44,26 @@ export const updateJobScraperSettings = async (req: Request, res: Response, next
     next(error);
   }
 };
+
+export const updateRapidApiSettings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as any).user.id;
+    const { url, key, host } = req.body;
+
+    if (!url || !key || !host) {
+      return res.status(400).json({ success: false, message: "Missing required RapidAPI fields" });
+    }
+
+    await db.update(users).set({
+      rapidApiUrl: url,
+      rapidApiKey: key,
+      rapidApiHost: host,
+    }).where(eq(users.id, userId));
+
+    logger.info({ userId }, "Updated RapidAPI settings");
+    res.json({ success: true, message: "RapidAPI settings updated successfully." });
+  } catch (error) {
+    logger.error({ err: error }, "Failed to update RapidAPI settings");
+    next(error);
+  }
+};

@@ -152,6 +152,83 @@ export class JobNotificationService {
       message: totalMatches > 0 ? `Found and sent matches for ${totalMatches} users.` : "No jobs matched your skills today." 
     };
   }
+
+  async fetchRapidJobsForUser(url: string, key: string, host: string) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'x-rapidapi-key': key,
+          'x-rapidapi-host': host
+        }
+      });
+      const data = await response.json();
+      return data.data || data.jobs || data.results || [];
+    } catch (error) {
+      logger.error({ err: error }, "Failed to fetch rapid jobs from API");
+      return [];
+    }
+  }
+
+  async processRapidJobAlerts(targetUserId?: string) {
+    logger.info(`Starting RapidAPI Job Notification processing${targetUserId ? ' for user ' + targetUserId : ''}...`);
+
+    const users = await db.query.users.findMany({
+      where: (u, { eq, and }) => targetUserId 
+        ? and(eq(u.telegramConnected, true), eq(u.id, targetUserId))
+        : eq(u.telegramConnected, true),
+      with: {
+        roadmap: true,
+        resume: true,
+      },
+    });
+
+    if (users.length === 0) {
+      return { success: false, message: "No matching users found or you are not connected." };
+    }
+
+    let totalMatches = 0;
+
+    for (const user of users) {
+      if (!user.telegramChatId || !user.rapidApiUrl || !user.rapidApiKey || !user.rapidApiHost) continue;
+
+      try {
+        const jobs = await this.fetchRapidJobsForUser(user.rapidApiUrl, user.rapidApiKey, user.rapidApiHost);
+        if (jobs.length === 0) continue;
+
+        let keywords: string[] = ["react", "node", "next", "java", "python"];
+        if (user.resume?.skills) {
+          keywords = user.resume.skills.toLowerCase().split(",").map(k => k.trim());
+        }
+
+        const matchedJobs = jobs.filter((job: any) => {
+          const jobText = `${job.title} ${job.description || ""} ${job.tags?.join(" ") || ""}`.toLowerCase();
+          return keywords.some(keyword => keyword.length > 2 && jobText.includes(keyword));
+        }).slice(0, 5);
+
+        if (matchedJobs.length === 0) continue;
+
+        let jobMessage = `🚀 *RapidAPI Daily Match based on your Resume*\n\n`;
+        matchedJobs.forEach((job: any) => {
+          jobMessage += `*${job.title || 'Job'}* at _${job.employer_name || job.company_name || 'Company'}_\n`;
+          if (job.job_city || job.location) jobMessage += `📍 Location: ${job.job_city || job.location}\n`;
+          jobMessage += `🔗 [Apply Here](${job.job_apply_link || job.url || '#'})\n\n`;
+        });
+
+        const role = user.roadmap?.targetRole || "Software Engineer";
+        const personalizedMsg = `Hi! I found RapidAPI jobs matching your skills (*${keywords.slice(0,4).join(", ")}...*) for a *${role}*:\n\n` + jobMessage;
+        
+        await telegramProvider.sendMessage(user.telegramChatId, personalizedMsg, { disable_web_page_preview: true });
+        totalMatches++;
+      } catch (error) {
+        logger.error({ err: error, userId: user.id }, "Failed to send rapid job notification");
+      }
+    }
+
+    return { 
+      success: true, 
+      message: totalMatches > 0 ? `Found and sent RapidAPI matches for ${totalMatches} users.` : "No RapidAPI jobs matched your skills today." 
+    };
+  }
 }
 
 export const jobNotificationService = new JobNotificationService();

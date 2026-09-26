@@ -114,10 +114,34 @@ export class TelegramService {
         const result = await jobNotificationService.processDailyJobAlerts(user.id);
         if (!result?.success) {
           await telegramProvider.sendMessage(chatId, `❌ ${result?.message || 'No jobs found today.'}`);
+        } else if (result.message === "No jobs matched your skills today.") {
+          await telegramProvider.sendMessage(chatId, `ℹ️ ${result.message}`);
         }
       } catch (error) {
         logger.error({ err: error, userId: user.id }, "Failed to run on-demand job alert");
         await telegramProvider.sendMessage(chatId, "❌ Failed to scrape jobs. Please try again later.");
+      }
+    });
+
+    bot.onText(/\/jobsrapid/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      const user = await userRepository.findByTelegramId(chatId);
+      if (!user) {
+        await telegramProvider.sendMessage(chatId, "❌ Unauthorized. You must connect your CareerOS account via the web dashboard to use this command.");
+        return;
+      }
+
+      await telegramProvider.sendMessage(chatId, "🔍 Scraping the web via RapidAPI for jobs matching your resume... Please wait.");
+      try {
+        const result = await jobNotificationService.processRapidJobAlerts(user.id);
+        if (!result?.success) {
+          await telegramProvider.sendMessage(chatId, `❌ ${result?.message || 'No jobs found today.'}`);
+        } else if (result.message === "No RapidAPI jobs matched your skills today.") {
+          await telegramProvider.sendMessage(chatId, `ℹ️ ${result.message}`);
+        }
+      } catch (error) {
+        logger.error({ err: error, userId: user.id }, "Failed to run on-demand RapidAPI job alert");
+        await telegramProvider.sendMessage(chatId, "❌ Failed to scrape jobs via RapidAPI. Please try again later.");
       }
     });
 

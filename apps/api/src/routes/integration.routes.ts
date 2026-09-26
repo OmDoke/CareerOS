@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { updateNaukriSettings, updateJobScraperSettings } from "../controllers/integration.controller";
+import { updateNaukriSettings, updateJobScraperSettings, updateRapidApiSettings } from "../controllers/integration.controller";
 import { requireAuth } from "../middlewares/auth.middleware";
 
 const router = Router();
@@ -9,5 +9,6 @@ router.use(requireAuth);
 
 router.post("/naukri", updateNaukriSettings);
 router.post("/job-scraper", updateJobScraperSettings);
+router.post("/rapidapi", updateRapidApiSettings);
 
 export default router;
