@@ -9,7 +9,6 @@
 
 import { logger } from "../utils/logger";
 import { nseSession } from "./nse-session.service";
-import { fetchTwelveDataOHLC, isTwelveDataEnabled } from "./twelve-data.service";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -57,7 +56,7 @@ interface TimeframeResult {
   currentPrice: number;
   currentRsi: number | null;
   currentTrend: string | null;
-  candleSource: "twelve-data" | "yahoo-finance";
+  candleSource: "yahoo-finance";
 }
 
 interface TimeframeDetail {
@@ -102,37 +101,21 @@ export interface ConfluenceResult {
   /** Where the current spot price came from */
   priceSource: "nse-live" | "yahoo-fallback";
   /** Where the OHLCV candle data came from */
-  candleSource: "twelve-data" | "yahoo-finance";
+  candleSource: "yahoo-finance";
 }
 
-// ─── OHLCV Fetcher: Twelve Data (primary) → Yahoo Finance (fallback) ────────
+// ─── OHLCV Fetcher: Yahoo Finance ───────────────────────────────────────────
 
 /**
- * Fetches OHLCV candles.
- * 1st try: Twelve Data (~1 min delay) if TWELVE_DATA_API_KEY is set
- * 2nd try: Yahoo Finance (~15 min delay) as fallback
+ * Fetches OHLCV candles from Yahoo Finance (~15 min delay)
  *
- * Returns: { data: OHLCV[], source: "twelve-data" | "yahoo-finance" }
+ * Returns: { data: OHLCV[], source: "yahoo-finance" }
  */
 async function fetchOHLC(
   symbol: string,
   period: string,
   interval: string
-): Promise<{ data: OHLCV[]; source: "twelve-data" | "yahoo-finance" }> {
-  // Try Twelve Data first if API key is configured
-  if (isTwelveDataEnabled()) {
-    try {
-      const data = await fetchTwelveDataOHLC(symbol, interval);
-      return { data, source: "twelve-data" };
-    } catch (err: any) {
-      logger.warn(
-        "[Scanner] Twelve Data failed for %s %s (%s) — falling back to Yahoo Finance",
-        symbol, interval, err.message
-      );
-    }
-  }
-
-  // Fallback: Yahoo Finance
+): Promise<{ data: OHLCV[]; source: "yahoo-finance" }> {
   const data = await fetchOHLCYahoo(symbol, period, interval);
   return { data, source: "yahoo-finance" };
 }
@@ -461,7 +444,7 @@ async function computeConfluence(
   let bullishWeight = 0;
   let bearishWeight = 0;
   let currentPrice: number | null = null;
-  let candleSource: "twelve-data" | "yahoo-finance" = "yahoo-finance";
+  let candleSource: "yahoo-finance" = "yahoo-finance";
   const details: TimeframeDetail[] = [];
 
   for (const tf of TIMEFRAMES) {
@@ -690,9 +673,8 @@ export function formatSignalMessage(result: ConfluenceResult): string {
 
   // Show the real data source so user always knows what price was used
   const pSource = result.priceSource === "nse-live" ? "NSE Live (~30s)" : "Yahoo Finance (~15 min delay)";
-  const cSource = result.candleSource === "twelve-data" ? "Twelve Data (~1 min)" : "Yahoo Finance (~15 min)";
 
-  msg += `_📡 Price: ${pSource} | Patterns: ${cSource} | OI: NSE Live_\n`;
+  msg += `_📡 Price: ${pSource} | Patterns: Yahoo Finance (~15 min) | OI: NSE Live_\n`;
   msg += `_⚠️ Educational only — not financial advice_`;
 
   return msg;
