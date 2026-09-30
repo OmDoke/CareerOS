@@ -2,13 +2,14 @@
  * LIVE INTRADAY OPTIONS SCANNER - Node.js/TypeScript Port
  * =========================================================
  * Price data:
- *   - Historical candles (patterns/RSI/trend): Yahoo Finance (free, ~15 min delay)
- *   - Current spot price: NSE Live via cookie session (~30 sec delay) ← NEW
- *   - Open Interest (PCR/MaxPain/walls): NSE Live via cookie session  ← NEW
+ *   - Historical candles (patterns/RSI/trend): Twelve Data (~1 min) OR Yahoo Finance (~15 min fallback)
+ *   - Current spot price: NSE Live via cookie session (~30 sec delay)
+ *   - Open Interest (PCR/MaxPain/walls): NSE Live via cookie session
  */
 
 import { logger } from "../utils/logger";
 import { nseSession } from "./nse-session.service";
+import { fetchTwelveDataOHLC, isTwelveDataEnabled } from "./twelve-data.service";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -56,6 +57,7 @@ interface TimeframeResult {
   currentPrice: number;
   currentRsi: number | null;
   currentTrend: string | null;
+  candleSource: "twelve-data" | "yahoo-finance";
 }
 
 interface TimeframeDetail {
@@ -97,13 +99,46 @@ export interface ConfluenceResult {
   sl: number | null;
   target: number | null;
   oi?: OIData | null;
-  /** Where the current price came from — shown in Telegram footer */
+  /** Where the current spot price came from */
   priceSource: "nse-live" | "yahoo-fallback";
+  /** Where the OHLCV candle data came from */
+  candleSource: "twelve-data" | "yahoo-finance";
 }
 
-// ─── Yahoo Finance OHLCV Fetcher ─────────────────────────────────────────────
+// ─── OHLCV Fetcher: Twelve Data (primary) → Yahoo Finance (fallback) ────────
 
-async function fetchOHLC(symbol: string, period: string, interval: string): Promise<OHLCV[]> {
+/**
+ * Fetches OHLCV candles.
+ * 1st try: Twelve Data (~1 min delay) if TWELVE_DATA_API_KEY is set
+ * 2nd try: Yahoo Finance (~15 min delay) as fallback
+ *
+ * Returns: { data: OHLCV[], source: "twelve-data" | "yahoo-finance" }
+ */
+async function fetchOHLC(
+  symbol: string,
+  period: string,
+  interval: string
+): Promise<{ data: OHLCV[]; source: "twelve-data" | "yahoo-finance" }> {
+  // Try Twelve Data first if API key is configured
+  if (isTwelveDataEnabled()) {
+    try {
+      const data = await fetchTwelveDataOHLC(symbol, interval);
+      return { data, source: "twelve-data" };
+    } catch (err: any) {
+      logger.warn(
+        "[Scanner] Twelve Data failed for %s %s (%s) — falling back to Yahoo Finance",
+        symbol, interval, err.message
+      );
+    }
+  }
+
+  // Fallback: Yahoo Finance
+  const data = await fetchOHLCYahoo(symbol, period, interval);
+  return { data, source: "yahoo-finance" };
+}
+
+/** Yahoo Finance OHLCV fetcher (fallback) */
+async function fetchOHLCYahoo(symbol: string, period: string, interval: string): Promise<OHLCV[]> {
   const rangeMap: Record<string, string> = {
     "5d": "5d", "1mo": "1mo", "3mo": "3mo",
   };
@@ -384,7 +419,7 @@ async function scanTimeframe(
   period: string
 ): Promise<TimeframeResult | null> {
   try {
-    const data = await fetchOHLC(symbol, period, interval);
+    const { data, source } = await fetchOHLC(symbol, period, interval);
     if (data.length < 10) return null;
 
     const patterns = scanPatterns(data);
@@ -408,6 +443,7 @@ async function scanTimeframe(
       currentPrice,
       currentRsi: isNaN(lastRsi) ? null : lastRsi,
       currentTrend: trend,
+      candleSource: source,
     };
   } catch (err: any) {
     logger.warn("  %s %s scan failed: %s", symbol, interval, err.message);
@@ -425,11 +461,15 @@ async function computeConfluence(
   let bullishWeight = 0;
   let bearishWeight = 0;
   let currentPrice: number | null = null;
+  let candleSource: "twelve-data" | "yahoo-finance" = "yahoo-finance";
   const details: TimeframeDetail[] = [];
 
   for (const tf of TIMEFRAMES) {
     const result = results[tf.interval];
-    if (result !== null && result !== undefined) currentPrice = result.currentPrice;
+    if (result !== null && result !== undefined) {
+      currentPrice = result.currentPrice;
+      candleSource = result.candleSource;
+    }
 
     if (!result) {
       details.push({ tf: tf.interval, label: tf.label, bias: "none", pattern: "—", score: 0 });
@@ -529,6 +569,7 @@ async function computeConfluence(
     optionType, suggestedStrike, otmStrike, confidence,
     agreeingTfs, totalTfs, overallBias, reason, details, sl, target, oi: oiData,
     priceSource: "yahoo-fallback",  // default; overridden below if NSE live works
+    candleSource,
   };
 }
 
@@ -648,12 +689,10 @@ export function formatSignalMessage(result: ConfluenceResult): string {
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
 
   // Show the real data source so user always knows what price was used
-  if (result.priceSource === "nse-live") {
-    msg += `_📡 Price: NSE Live (~30s) | Patterns: Yahoo Finance | OI: NSE Live_\n`;
-  } else {
-    msg += `_⚠️ Price: Yahoo Finance (~15 min delay) \u2014 NSE live unavailable_\n`;
-    msg += `_Patterns: Yahoo Finance | OI: NSE_\n`;
-  }
+  const pSource = result.priceSource === "nse-live" ? "NSE Live (~30s)" : "Yahoo Finance (~15 min delay)";
+  const cSource = result.candleSource === "twelve-data" ? "Twelve Data (~1 min)" : "Yahoo Finance (~15 min)";
+
+  msg += `_📡 Price: ${pSource} | Patterns: ${cSource} | OI: NSE Live_\n`;
   msg += `_⚠️ Educational only — not financial advice_`;
 
   return msg;

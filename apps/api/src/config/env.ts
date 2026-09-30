@@ -14,6 +14,9 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_BOT_USERNAME: z.string().optional(),
   TELEGRAM_ALLOWED_USER_ID: z.string().optional(),
+  // Twelve Data — free plan: 800 req/day, 8 req/min, ~1 min delay for NSE
+  // Sign up free at https://twelvedata.com — no KYC needed
+  TWELVE_DATA_API_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
