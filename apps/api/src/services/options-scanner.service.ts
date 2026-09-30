@@ -1,13 +1,14 @@
 /**
  * LIVE INTRADAY OPTIONS SCANNER - Node.js/TypeScript Port
  * =========================================================
- * Scans NIFTY and BANKNIFTY across multiple timeframes.
- * Data: Yahoo Finance (free, ~15 min delayed) + NSE OI (free public API)
- *
- * Pattern logic ported from live_options_scan.py
+ * Price data:
+ *   - Historical candles (patterns/RSI/trend): Yahoo Finance (free, ~15 min delay)
+ *   - Current spot price: NSE Live via cookie session (~30 sec delay) ← NEW
+ *   - Open Interest (PCR/MaxPain/walls): NSE Live via cookie session  ← NEW
  */
 
 import { logger } from "../utils/logger";
+import { nseSession } from "./nse-session.service";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -96,6 +97,8 @@ export interface ConfluenceResult {
   sl: number | null;
   target: number | null;
   oi?: OIData | null;
+  /** Where the current price came from — shown in Telegram footer */
+  priceSource: "nse-live" | "yahoo-fallback";
 }
 
 // ─── Yahoo Finance OHLCV Fetcher ─────────────────────────────────────────────
@@ -292,29 +295,14 @@ function scorePattern(
   return { score, note: notes.join(", ") || "—" };
 }
 
-// ─── NSE Open Interest Data ───────────────────────────────────────────────────
+// ─── NSE OI Data (via cookie session — more reliable) ────────────────────────
 
 async function fetchNSEOIData(indexName: "NIFTY" | "BANKNIFTY"): Promise<OIData | null> {
   try {
-    const symbol = indexName;
-    const url = `https://www.nseindia.com/api/option-chain-indices?symbol=${symbol}`;
+    // Use the session-managed fetch (handles cookie refresh automatically)
+    const data = await nseSession.getOptionChain(indexName);
+    if (!data) return null;
 
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept: "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        Referer: "https://www.nseindia.com/option-chain",
-      },
-    });
-
-    if (!res.ok) {
-      logger.warn("NSE OI fetch HTTP %d for %s", res.status, symbol);
-      return null;
-    }
-
-    const data = (await res.json()) as any;
     const records = data?.records?.data;
     if (!Array.isArray(records) || records.length === 0) return null;
 
@@ -540,6 +528,7 @@ async function computeConfluence(
     indexName, symbol, currentPrice, atmStrike, action, strength,
     optionType, suggestedStrike, otmStrike, confidence,
     agreeingTfs, totalTfs, overallBias, reason, details, sl, target, oi: oiData,
+    priceSource: "yahoo-fallback",  // default; overridden below if NSE live works
   };
 }
 
@@ -554,9 +543,11 @@ const INDICES: Record<IndexKey, string> = {
 
 export async function scanIndex(name: IndexKey): Promise<ConfluenceResult | null> {
   const symbol = INDICES[name];
-  logger.info("Scanning %s across %d timeframes + OI...", name, TIMEFRAMES.length);
+  logger.info("Scanning %s across %d timeframes + live NSE price + OI...", name, TIMEFRAMES.length);
 
-  const [results, oiData] = await Promise.all([
+  // Run all three in parallel: candle patterns, live price, OI data
+  const [results, liveQuote, oiData] = await Promise.all([
+    // 1. Yahoo Finance historical candles for pattern detection
     Promise.all(
       TIMEFRAMES.map(async (tf) => {
         const r = await scanTimeframe(symbol, tf.interval, tf.period);
@@ -565,10 +556,40 @@ export async function scanIndex(name: IndexKey): Promise<ConfluenceResult | null
     ).then((arr) =>
       arr.reduce((acc, { interval, result }) => ({ ...acc, [interval]: result }), {} as Record<string, TimeframeResult | null>)
     ),
+    // 2. NSE live price (~30 sec delay via cookie session)
+    nseSession.getLiveQuote(name).catch(() => null),
+    // 3. NSE OI data (PCR, Max Pain, walls) via cookie session
     fetchNSEOIData(name).catch(() => null),
   ]);
 
-  return computeConfluence(results, symbol, oiData);
+  const confluence = await computeConfluence(results, symbol, oiData);
+  if (!confluence) return null;
+
+  // Override the Yahoo Finance price with the live NSE price if available
+  if (liveQuote && liveQuote.last > 0) {
+    const live = liveQuote.last;
+    const strikeGap = STRIKE_GAPS[symbol] ?? 50;
+    confluence.currentPrice = live;
+    confluence.atmStrike = getAtmStrike(live, strikeGap);
+    confluence.priceSource = "nse-live"; // ← mark as live
+    // Recalculate SL and Target using the live price
+    if (confluence.action !== "NO TRADE") {
+      const riskPts = live * 0.004;
+      if (confluence.action === "BUY CE") {
+        confluence.sl = +(live - riskPts).toFixed(2);
+        confluence.target = +(live + riskPts * 2).toFixed(2);
+      } else {
+        confluence.sl = +(live + riskPts).toFixed(2);
+        confluence.target = +(live - riskPts * 2).toFixed(2);
+      }
+    }
+    logger.info("[%s] Live NSE price override: %s (was Yahoo: ~15min old)", name, live);
+  } else {
+    // NSE live failed — log it so we know
+    logger.warn("[%s] NSE live price unavailable — using Yahoo Finance (~15 min delayed) price", name);
+  }
+
+  return confluence;
 }
 
 export async function scanAll(): Promise<Record<IndexKey, ConfluenceResult | null>> {
@@ -625,7 +646,14 @@ export function formatSignalMessage(result: ConfluenceResult): string {
 
   msg += `\n📝 _${result.reason}_\n`;
   msg += `━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `_⏰ Yahoo Finance (~15 min delay) + NSE OI_\n`;
+
+  // Show the real data source so user always knows what price was used
+  if (result.priceSource === "nse-live") {
+    msg += `_📡 Price: NSE Live (~30s) | Patterns: Yahoo Finance | OI: NSE Live_\n`;
+  } else {
+    msg += `_⚠️ Price: Yahoo Finance (~15 min delay) \u2014 NSE live unavailable_\n`;
+    msg += `_Patterns: Yahoo Finance | OI: NSE_\n`;
+  }
   msg += `_⚠️ Educational only — not financial advice_`;
 
   return msg;
