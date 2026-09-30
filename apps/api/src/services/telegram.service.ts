@@ -10,6 +10,13 @@ import { db } from "../db/database";
 import crypto from "crypto";
 import { env } from "../config/env";
 import { jobNotificationService } from "./job-notification.service";
+import {
+  scanIndex,
+  scanAll,
+  formatSignalMessage,
+  isMarketOpen,
+  type IndexKey,
+} from "./options-scanner.service";
 
 
 export class TelegramService {
@@ -143,6 +150,83 @@ export class TelegramService {
         logger.error({ err: error, userId: user.id }, "Failed to run on-demand RapidAPI job alert");
         await telegramProvider.sendMessage(chatId, "❌ Failed to scrape jobs via RapidAPI. Please try again later.");
       }
+    });
+
+    // ── Options Signal (/optionsignal, /optionsignal NIFTY, /optionsignal BANKNIFTY) ──
+    bot.onText(/^\/optionsignal(?:\s+(NIFTY|BANKNIFTY))?$/i, async (msg: any, match: any) => {
+      const chatId = msg.chat.id.toString();
+      const indexArg = match?.[1]?.toUpperCase() as IndexKey | undefined;
+
+      const marketOpen = isMarketOpen();
+      const statusNote = marketOpen
+        ? "_Market is OPEN — data is live (15 min delay)_"
+        : "_Market is CLOSED — showing last session data_";
+
+      await telegramProvider.sendMessage(
+        chatId,
+        `📡 *Scanning ${indexArg ?? "NIFTY + BANKNIFTY"} options...*\n${statusNote}\n\n_Please wait ~15 sec..._`,
+        { parse_mode: "Markdown" }
+      );
+
+      try {
+        if (indexArg) {
+          // Scan single index
+          const result = await scanIndex(indexArg);
+          if (!result) {
+            await telegramProvider.sendMessage(chatId, `❌ Could not fetch data for ${indexArg}. Try again.`);
+            return;
+          }
+          await telegramProvider.sendMessage(chatId, formatSignalMessage(result), { parse_mode: "Markdown" });
+        } else {
+          // Scan both
+          const results = await scanAll();
+          for (const [name, result] of Object.entries(results)) {
+            if (result) {
+              await telegramProvider.sendMessage(chatId, formatSignalMessage(result), { parse_mode: "Markdown" });
+            } else {
+              await telegramProvider.sendMessage(chatId, `❌ Could not fetch data for ${name}.`);
+            }
+          }
+        }
+      } catch (error: any) {
+        logger.error({ err: error, chatId }, "Options scan failed");
+        await telegramProvider.sendMessage(chatId, "❌ Options scan failed. Yahoo Finance or NSE may be temporarily unavailable. Try again in a few minutes.");
+      }
+    });
+
+    // ── Options Help ──────────────────────────────────────────────────────────
+    bot.onText(/^\/optionhelp$/, async (msg: any) => {
+      const chatId = msg.chat.id.toString();
+      const help = [
+        `📊 *Options Scanner Help*`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        `*Commands:*`,
+        `• /optionsignal — Scan NIFTY + BANKNIFTY`,
+        `• /optionsignal NIFTY — Scan NIFTY only`,
+        `• /optionsignal BANKNIFTY — Scan BANKNIFTY only`,
+        ``,
+        `*How it works:*`,
+        `1️⃣  Fetches OHLCV data from Yahoo Finance (4 timeframes: 5m, 15m, 30m, 1h)`,
+        `2️⃣  Detects candlestick patterns (Engulfing, Hammer, Morning Star, etc.)`,
+        `3️⃣  Scores each pattern by RSI, Volume, and Trend`,
+        `4️⃣  Fetches NSE Open Interest → PCR + Max Pain + OI walls`,
+        `5️⃣  Combines all signals into a single confluence recommendation`,
+        ``,
+        `*Signal Strength:*`,
+        `💪 STRONG — 3+ timeframes agree, confidence > 75%`,
+        `👍 MODERATE — 2+ timeframes agree, confidence > 60%`,
+        `⚠️ WEAK — partial agreement`,
+        `🚫 AVOID — conflicting signals, stay out`,
+        ``,
+        `*Best used:*`,
+        `• During market hours (9:15 AM – 3:30 PM IST, Mon–Fri)`,
+        `• Rescan every 30–60 minutes for updated signals`,
+        ``,
+        `━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `_⚠️ Educational only — not financial advice_`,
+      ].join("\n");
+      await telegramProvider.sendMessage(chatId, help, { parse_mode: "Markdown" });
     });
 
     bot.onText(/\/blogs/, async (msg: any) => {
