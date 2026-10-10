@@ -5,7 +5,6 @@ import { TodaySessionCard } from "../../features/study-session/components/TodayS
 import { StudyTaskList } from "../../features/study-session/components/StudyTaskList";
 import { SessionProgress } from "../../features/study-session/components/SessionProgress";
 import { CompleteSessionButton } from "../../features/study-session/components/CompleteSessionButton";
-import { Button } from "../../components/ui/button";
 import { CalendarCheck, Sparkles, Trophy, Clock, Target } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -19,52 +18,53 @@ export default function TodayPage() {
   const generateSession = useGenerateSession();
 
   if (isLoading) {
-    return (
-      <>
-        <SpinnerSkeleton />
-      </>
-    );
+    return <SpinnerSkeleton />;
   }
 
   if (!session) {
     return (
-      <>
-        <div className="animate-in fade-in duration-500">
-          <PageHeader 
-            title="Today's Study Session"
-            description="Your daily personalized curriculum tasks."
-            breadcrumbItems={[{ label: "Today" }]}
-          />
-          <div className="max-w-2xl mx-auto mt-12">
-            <EmptyState
-              icon={CalendarCheck}
-              title="No Session for Today"
-              description="Generate today's study session to know exactly what topics to focus on based on your roadmap."
-            >
-              <div className="mt-8 flex flex-col items-center gap-4 w-full">
-                <Button
-                  onClick={() => generateSession.mutate()}
-                  disabled={generateSession.isPending}
-                  size="lg"
-                  className="w-full sm:w-auto shadow-md"
-                >
-                  {generateSession.isPending ? (
-                    "Generating..."
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 text-yellow-300 mr-2" />
-                      Start Today&apos;s Session
-                    </>
-                  )}
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Need a roadmap first? <Link href="/roadmap" className="text-primary hover:underline font-medium">Go to Roadmap</Link>
-                </p>
-              </div>
-            </EmptyState>
-          </div>
+      <div className="animate-in fade-in duration-300">
+        <PageHeader
+          title="Today's Session"
+          description="Your daily personalized curriculum."
+          breadcrumbItems={[{ label: "Today" }]}
+        />
+        <div className="max-w-xl mx-auto mt-10">
+          <EmptyState
+            icon={CalendarCheck}
+            title="No session yet"
+            description="Generate today's study session to get a set of calibrated questions based on your roadmap and current readiness score."
+          >
+            <div className="mt-2 flex flex-col items-center gap-3 w-full">
+              <button
+                onClick={() => generateSession.mutate()}
+                disabled={generateSession.isPending}
+                className="btn-primary px-8 py-3 text-sm w-full sm:w-auto"
+              >
+                {generateSession.isPending ? (
+                  <>
+                    <span
+                      className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
+                    />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate session
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-[var(--fg-muted)]">
+                Need a roadmap first?{" "}
+                <Link href="/roadmap" className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-medium transition-colors">
+                  Go to roadmap
+                </Link>
+              </p>
+            </div>
+          </EmptyState>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -74,67 +74,79 @@ export default function TodayPage() {
   const isCompleted = session.status === "COMPLETED";
   const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
   const remainingTasks = totalTasks - completedTasks;
-  const estimatedRemainingMins = remainingTasks * 15; // Assume 15 mins per task
+  const estimatedRemainingMins = remainingTasks * 15;
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <>
-      <div className="animate-in fade-in duration-500 space-y-8">
-        <PageHeader 
-          title="Today's Study Session"
-          description={new Date(session.sessionDate).toLocaleDateString("en-US", {
-            weekday: "long", year: "numeric", month: "long", day: "numeric",
-          })}
-          breadcrumbItems={[{ label: "Today" }]}
-          action={
-            !isCompleted && !allTasksDone && (
-              <div className="hidden sm:flex items-center gap-2 bg-secondary/50 text-secondary-foreground px-4 py-2 rounded-full border shadow-sm text-sm font-medium">
-                <Clock className="h-4 w-4" />
-                ~{estimatedRemainingMins} mins remaining
-              </div>
-            )
-          }
-        />
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <StatCard title="Tasks Completed" value={`${completedTasks} / ${totalTasks}`} icon={Target} />
-          <StatCard title="Progress" value={`${progressPercent}%`} icon={Clock} />
-          <StatCard title="XP Reward" value="+150 XP" icon={Trophy} description="Earned upon completion" />
-        </div>
-
-        {(isCompleted || allTasksDone) ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center text-center p-12 border rounded-2xl bg-success/10 border-success/20 mb-8 shadow-sm"
-          >
-            <div className="h-20 w-20 rounded-full bg-success/20 flex items-center justify-center mb-6 ring-8 ring-success/10">
-              <CalendarCheck className="h-10 w-10 text-success" />
+    <div className="animate-in fade-in duration-300 space-y-6">
+      <PageHeader
+        title="Today's Session"
+        description={new Date(session.sessionDate).toLocaleDateString("en-US", {
+          weekday: "long", year: "numeric", month: "long", day: "numeric",
+        })}
+        breadcrumbItems={[{ label: "Today" }]}
+        action={
+          !isCompleted && !allTasksDone ? (
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium"
+              style={{
+                backgroundColor: "var(--bg-sunken)",
+                borderColor: "var(--border)",
+                color: "var(--fg-secondary)",
+              }}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              ~{estimatedRemainingMins} min remaining
             </div>
-            <h2 className="text-3xl font-bold mb-2">You&apos;re all done for today!</h2>
-            <p className="text-muted-foreground mb-8 max-w-md text-lg">
-              Great job completing your study session. Come back tomorrow for your next customized curriculum tasks.
-            </p>
-            <Link href="/dashboard">
-              <Button size="lg" className="shadow-md">Back to Dashboard</Button>
-            </Link>
-          </motion.div>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            <TodaySessionCard session={session} />
-            <SessionProgress completed={completedTasks} total={totalTasks} />
-            <StudyTaskList tasks={session.tasks ?? []} />
+          ) : null
+        }
+      />
 
-            <div className="mt-8 flex justify-end">
-              <CompleteSessionButton sessionId={session.id} />
-            </div>
-          </motion.div>
-        )}
+      {/* Stat row */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard title="Tasks Completed" value={`${completedTasks} / ${totalTasks}`} icon={Target} accentColor="accent" />
+        <StatCard title="Progress" value={`${progressPercent}%`} icon={Clock} accentColor="ok" />
+        <StatCard title="XP Reward" value="+150 XP" icon={Trophy} description="Earned upon completion" accentColor="muted" />
       </div>
-    </>
+
+      {(isCompleted || allTasksDone) ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.35 }}
+          className="card p-12 flex flex-col items-center justify-center text-center"
+        >
+          <div
+            className="h-16 w-16 rounded-xl flex items-center justify-center mb-5"
+            style={{ backgroundColor: "var(--ok-dim)", color: "var(--ok)" }}
+          >
+            <CalendarCheck className="h-8 w-8" />
+          </div>
+          <h2 className="text-xl font-semibold text-[var(--fg-primary)] mb-2">
+            All done for today.
+          </h2>
+          <p className="text-sm text-[var(--fg-secondary)] mb-7 max-w-sm">
+            Come back tomorrow for your next session. Your readiness score has been updated.
+          </p>
+          <Link href="/dashboard">
+            <button className="btn-primary px-7 py-2.5 text-sm">Back to dashboard</button>
+          </Link>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-5"
+        >
+          <TodaySessionCard session={session} />
+          <SessionProgress completed={completedTasks} total={totalTasks} />
+          <StudyTaskList tasks={session.tasks ?? []} />
+
+          <div className="flex justify-end mt-4">
+            <CompleteSessionButton sessionId={session.id} />
+          </div>
+        </motion.div>
+      )}
+    </div>
   );
 }

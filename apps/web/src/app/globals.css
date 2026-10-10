@@ -1,99 +1,408 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — CAREEROS EDITORIAL STUDY NOTEBOOK
+   ═══════════════════════════════════════════════════════ */
 @layer base {
-  .theme {
-    --font-heading: 'Plus Jakarta Sans', var(--font-sans), sans-serif;
-    --font-sans: 'Plus Jakarta Sans', var(--font-sans), sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
-  :root,
-  .dark {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --card: rgba(255, 255, 255, 0.9);
-    --card-foreground: #0f172a;
-    --popover: #ffffff;
-    --popover-foreground: #0f172a;
-    --primary: #7c3aed;
-    --primary-foreground: #ffffff;
-    --brand: #7c3aed;
-    --brand-glow: rgba(124, 58, 237, 0.2);
-    --secondary: #f1f5f9;
-    --secondary-foreground: #0f172a;
-    --muted: #f8fafc;
-    --muted-foreground: #64748b;
-    --accent: #0d9488;
-    --accent-foreground: #ffffff;
-    --destructive: #ef4444;
+  :root {
+    /* ── Backgrounds ── */
+    --bg-base:       #F7F5F0;   /* warm off-white, feels like quality paper */
+    --bg-surface:    #FDFCFA;   /* card surfaces — slightly lighter */
+    --bg-sunken:     #EFEDE8;   /* inputs, code blocks, recessed elements */
+
+    /* ── Text ── */
+    --fg-primary:    #1A1814;   /* near-black with warmth, not cold #000 */
+    --fg-secondary:  #6B6560;
+    --fg-muted:      #9C9590;
+
+    /* ── ONE sharp accent: Amber ── */
+    --accent:        #D97706;   /* Amber-600 */
+    --accent-hover:  #B45309;   /* Amber-700 */
+    --accent-dim:    #FEF3C7;   /* Amber-100 */
+    --accent-fg:     #FFFFFF;
+
+    /* ── Semantic colours ── */
+    --ok:            #059669;   /* Emerald-600 */
+    --ok-dim:        #D1FAE5;   /* Emerald-100 */
+    --err:           #DC2626;   /* Red-600 */
+    --err-dim:       #FEE2E2;   /* Red-100 */
+    --warn:          #D97706;   /* Same as accent — intentional */
+    --warn-dim:      #FEF3C7;
+
+    /* ── Structure ── */
+    --border:        #E2DDD8;
+    --border-strong: #C5BFB8;
+    --shadow-sm:     0 1px 3px rgba(26,24,20,0.08), 0 1px 2px rgba(26,24,20,0.06);
+    --shadow-md:     0 4px 16px rgba(26,24,20,0.10), 0 1px 4px rgba(26,24,20,0.06);
+
+    /* ── Radius system (single source of truth) ── */
+    --r-card:    0.75rem;   /* 12px — refined, not bubbly */
+    --r-input:   0.5rem;    /* 8px */
+    --r-pill:    9999px;
+    --r-badge:   0.375rem;  /* 6px */
+
+    /* ── shadcn compatibility (mapped to above tokens) ── */
+    --background:           var(--bg-base);
+    --foreground:           var(--fg-primary);
+    --card:                 var(--bg-surface);
+    --card-foreground:      var(--fg-primary);
+    --popover:              var(--bg-surface);
+    --popover-foreground:   var(--fg-primary);
+    --primary:              var(--accent);
+    --primary-foreground:   var(--accent-fg);
+    --secondary:            var(--bg-sunken);
+    --secondary-foreground: var(--fg-primary);
+    --muted:                var(--bg-sunken);
+    --muted-foreground:     var(--fg-muted);
+    --destructive:          var(--err);
     --destructive-foreground: #ffffff;
-    --success: #10b981;
-    --success-foreground: #ffffff;
-    --warning: #f59e0b;
-    --warning-foreground: #ffffff;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #7c3aed;
-    --radius: 1.375rem;
+    --success:              var(--ok);
+    --success-foreground:   #ffffff;
+    --border:               var(--border);
+    --input:                var(--border);
+    --ring:                 var(--accent);
+    --radius:               var(--r-card);
+
+    /* ── Fonts ── */
+    --font-display: "DM Serif Display";
+    --font-sans:    "DM Sans";
+    --font-mono:    "Geist Mono";
   }
+
+  /* ── Dark mode (future-ready) ── */
+  .dark {
+    --bg-base:       #141210;
+    --bg-surface:    #1C1A17;
+    --bg-sunken:     #0F0E0C;
+    --fg-primary:    #F0EDE8;
+    --fg-secondary:  #9C9590;
+    --fg-muted:      #6B6560;
+    --accent:        #F59E0B;
+    --accent-hover:  #D97706;
+    --accent-dim:    #292010;
+    --ok:            #10B981;
+    --ok-dim:        #0A2E1E;
+    --err:           #F87171;
+    --err-dim:       #2D1010;
+    --border:        #2A2820;
+    --border-strong: #3A3830;
+    --shadow-sm:     0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.20);
+    --shadow-md:     0 4px 16px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20);
+  }
+
+  /* ── Global resets ── */
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--fg-primary);
+    min-height: 100svh;
+  }
+
+  /* Selection highlight using amber accent */
+  ::selection {
+    background-color: var(--accent-dim);
+    color: var(--fg-primary);
+  }
+
+  /* Scrollbar — subtle, matches warm palette */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMPONENT PRIMITIVES
+   ═══════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Card primitive — NO glassmorphism, clean solid surface ── */
+  .card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-raised {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Hover state for interactive cards */
+  .card-interactive {
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+  }
+  .card-interactive:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--r-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+  }
+
+  .badge-accent {
+    background-color: var(--accent-dim);
+    color: var(--accent-hover);
+    border-color: oklch(from var(--accent-dim) calc(l - 0.1) c h);
+  }
+
+  .badge-ok {
+    background-color: var(--ok-dim);
+    color: var(--ok);
+  }
+
+  .badge-err {
+    background-color: var(--err-dim);
+    color: var(--err);
+  }
+
+  .badge-neutral {
+    background-color: var(--bg-sunken);
+    color: var(--fg-secondary);
+    border-color: var(--border);
+  }
+
+  /* ── Section header micro-label ── */
+  .eyebrow {
+    font-size: 0.75rem;   /* 12px minimum — WCAG AA */
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  /* ── Display type — uses serif font ── */
+  .display {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  /* ── Mono stat number ── */
+  .stat-number {
+    font-family: var(--font-mono), monospace;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Top nav — ONLY element allowed to use backdrop-blur ── */
+  .topnav {
+    background-color: color-mix(in srgb, var(--bg-base) 85%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── Auth card — one purposeful glass element ── */
+  .auth-card {
+    background-color: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Readiness gauge ── */
+  .gauge-track {
+    height: 6px;
+    background-color: var(--bg-sunken);
+    border-radius: var(--r-pill);
+    overflow: visible;
+    position: relative;
+  }
+
+  .gauge-fill {
+    height: 100%;
+    background-color: var(--accent);
+    border-radius: var(--r-pill);
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .gauge-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background-color: var(--border-strong);
+    border-radius: 1px;
+  }
+
+  /* ── Code block ── */
+  .code-block {
+    background-color: #0F0E0C;
+    color: #A3E635;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    border-radius: var(--r-input);
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+  }
+
+  /* ── Answer textarea ── */
+  .answer-area {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.875rem;
+    background-color: #0F0E0C;
+    color: #E4E4E7;
+    border: 1px solid #2A2820;
+    border-radius: var(--r-input);
+    resize: vertical;
+    transition: border-color 150ms ease;
+    padding: 1rem;
+    min-height: 200px;
+  }
+  .answer-area:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  /* ── Primary button ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    border: 1px solid transparent;
+    border-radius: var(--r-pill);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Ghost button ── */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background-color: transparent;
+    color: var(--fg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--r-pill);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .btn-ghost:hover {
+    background-color: var(--bg-sunken);
+    border-color: var(--border-strong);
+    color: var(--fg-primary);
+  }
+  .btn-ghost:active { transform: scale(0.98); }
+
+  /* ── Skeleton ── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-sunken) 25%,
+      color-mix(in srgb, var(--bg-sunken) 60%, var(--border)) 50%,
+      var(--bg-sunken) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease infinite;
+    border-radius: var(--r-badge);
+  }
+
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 }
 
-/* Glassmorphism utility layer (Light Mode Architecture) */
+/* ═══════════════════════════════════════════════════════
+   UTILITY OVERRIDES — shadcn component theming
+   ═══════════════════════════════════════════════════════ */
 @layer utilities {
-  .glass-card {
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(226, 232, 240, 0.85);
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+  /* shadcn Card reset — map to our card primitive */
+  .rounded-lg  { border-radius: var(--r-card) !important; }
+
+  /* Prose styling for markdown content */
+  .prose-careeros {
+    color: var(--fg-primary);
+    font-family: var(--font-sans);
+    line-height: 1.7;
+  }
+  .prose-careeros h1, .prose-careeros h2, .prose-careeros h3 {
+    font-family: var(--font-display);
+    color: var(--fg-primary);
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  .prose-careeros code {
+    font-family: var(--font-mono);
+    background-color: var(--bg-sunken);
+    padding: 0.15em 0.4em;
+    border-radius: var(--r-badge);
+    font-size: 0.875em;
+  }
+  .prose-careeros pre {
+    background-color: #0F0E0C;
+    color: #A3E635;
+    border-radius: var(--r-input);
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  .prose-careeros pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.875rem;
+    color: inherit;
   }
 
-  .glass-card-hover {
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .glass-card-hover:hover {
-    background-color: rgba(255, 255, 255, 0.95);
-    border-color: rgba(124, 58, 237, 0.25);
-    box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-  }
-
-  .glass-pill {
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  }
-
-  .glass-input {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #0f172a;
-    transition: all 0.2s ease;
-  }
-  .glass-input:focus {
-    border-color: rgba(124, 58, 237, 0.5);
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
-  }
-
-  .text-micro-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #94a3b8;
-  }
+  /* Stagger animation utility for sibling lists */
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger > *:nth-child(6) { animation-delay: 250ms; }
 }

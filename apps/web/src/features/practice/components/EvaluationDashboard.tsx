@@ -1,7 +1,17 @@
 import React from "react";
 import { CircularProgress } from "../../../components/ui/circular-progress";
-import { CheckCircle2, XCircle, AlertTriangle, BookOpen, Lightbulb, ChevronRight, Check, X, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  BookOpen,
+  Lightbulb,
+  ChevronRight,
+  Check,
+  X,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import * as motion from "framer-motion/client";
 
 interface EvaluationDashboardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,142 +19,260 @@ interface EvaluationDashboardProps {
   onNextQuestion: () => void;
 }
 
+/* Score colour based on value */
+function scoreColor(score: number) {
+  if (score >= 80) return "var(--ok)";
+  if (score >= 60) return "var(--accent)";
+  return "var(--err)";
+}
+
+function scoreLabel(score: number) {
+  if (score >= 80) return "Exceeds bar";
+  if (score >= 60) return "Meets bar";
+  return "Needs work";
+}
+
 export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDashboardProps) {
   if (!evaluation) return null;
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-0.5 rounded-full w-fit mb-2">
-            <Sparkles className="h-3 w-3" />
-            Evaluation Complete
-          </span>
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Performance Breakdown</h2>
-          <p className="text-xs text-slate-500 mt-1">Algorithmic analysis of your interview answer.</p>
-        </div>
-        <button 
-          onClick={onNextQuestion} 
-          className="w-full md:w-auto rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-        >
-          Next Question <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
+  const color = scoreColor(evaluation.overallScore);
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div className="col-span-2 md:col-span-1 rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] flex flex-col items-center justify-center text-center">
-          <CircularProgress value={evaluation.overallScore} size={110} label="Overall Score" />
-          <span className="mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            {evaluation.overallScore >= 80 ? "Exceeds Bar" : evaluation.overallScore >= 60 ? "Meets Bar" : "Needs Review"}
-          </span>
+  return (
+    <div className="space-y-5">
+      {/* ── Header ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
+      >
+        <div>
+          <p className="eyebrow text-[var(--fg-muted)] mb-1">Result</p>
+          <h2 className="text-xl font-semibold text-[var(--fg-primary)] tracking-tight">
+            Performance Breakdown
+          </h2>
+          <p className="text-xs text-[var(--fg-secondary)] mt-0.5">
+            AI analysis of your answer across 6 dimensions.
+          </p>
         </div>
-        <div className="col-span-2 md:col-span-3 rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Dimensions</p>
-          <h3 className="text-lg font-bold text-slate-900 mb-6">Detailed Competency Breakdown</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-            <CircularProgress value={evaluation.technicalScore || 0} size={76} strokeWidth={6} label="Technical" />
-            <CircularProgress value={evaluation.problemSolvingScore || 0} size={76} strokeWidth={6} label="Problem Solving" />
-            <CircularProgress value={evaluation.communicationScore || 0} size={76} strokeWidth={6} label="Communication" />
-            {(evaluation.timeComplexityScore !== undefined || evaluation.spaceComplexityScore !== undefined) && (
-              <>
-                <CircularProgress value={evaluation.timeComplexityScore || 0} size={76} strokeWidth={6} label="Time Complexity" />
-                <CircularProgress value={evaluation.spaceComplexityScore || 0} size={76} strokeWidth={6} label="Space Complexity" />
-              </>
-            )}
-            <CircularProgress value={evaluation.confidenceScore || 0} size={76} strokeWidth={6} label="Confidence" />
+        <button onClick={onNextQuestion} className="btn-primary px-6 py-2.5 text-sm shrink-0">
+          Next question
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </motion.div>
+
+      {/* ── Score reveal — the dramatic moment ── */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="card p-6"
+      >
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          {/* Large score circle */}
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <div style={{ color }}>
+              <CircularProgress
+                value={evaluation.overallScore}
+                size={120}
+                strokeWidth={9}
+                label="Overall"
+                strokeClassName=""
+              />
+            </div>
+            <span
+              className="badge text-xs font-semibold"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
+                borderColor: `color-mix(in srgb, ${color} 25%, transparent)`,
+                color,
+              }}
+            >
+              {scoreLabel(evaluation.overallScore)}
+            </span>
+          </div>
+
+          {/* Dimension breakdown */}
+          <div className="flex-1 w-full">
+            <p className="eyebrow text-[var(--fg-muted)] mb-4">By dimension</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+              {[
+                { label: "Technical", value: evaluation.technicalScore },
+                { label: "Problem Solving", value: evaluation.problemSolvingScore },
+                { label: "Communication", value: evaluation.communicationScore },
+                { label: "Time Complexity", value: evaluation.timeComplexityScore },
+                { label: "Space Complexity", value: evaluation.spaceComplexityScore },
+                { label: "Confidence", value: evaluation.confidenceScore },
+              ]
+                .filter((d) => d.value !== undefined)
+                .map((dim) => (
+                  <div key={dim.label} className="text-center" style={{ color: scoreColor(dim.value || 0) }}>
+                    <CircularProgress
+                      value={dim.value || 0}
+                      size={72}
+                      strokeWidth={5}
+                      fontSize="text-sm"
+                      strokeClassName=""
+                    />
+                    <p className="text-xs text-[var(--fg-secondary)] mt-1.5 font-medium">{dim.label}</p>
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/40 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-          <h3 className="flex items-center text-emerald-800 font-bold text-base mb-4">
-            <CheckCircle2 className="h-5 w-5 mr-2 text-emerald-600 shrink-0" /> Strengths Identified
+      {/* ── Strengths + Mistakes ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="grid md:grid-cols-2 gap-4"
+      >
+        {/* Strengths */}
+        <div
+          className="card p-5"
+          style={{ borderColor: "color-mix(in srgb, var(--ok) 30%, transparent)" }}
+        >
+          <h3 className="flex items-center gap-2 text-sm font-semibold mb-3"
+            style={{ color: "var(--ok)" }}>
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            Strengths
           </h3>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {(evaluation.strengths || []).map((s: string, i: number) => (
-              <li key={i} className="flex items-start">
-                <Check className="h-4 w-4 text-emerald-600 mr-2.5 mt-0.5 shrink-0" />
-                <span className="text-xs text-slate-700 leading-relaxed font-medium">{s}</span>
+              <li key={i} className="flex items-start gap-2">
+                <Check className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "var(--ok)" }} />
+                <span className="text-xs text-[var(--fg-secondary)] leading-relaxed">{s}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="rounded-3xl border border-rose-200/80 bg-rose-50/40 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-          <h3 className="flex items-center text-rose-800 font-bold text-base mb-4">
-            <XCircle className="h-5 w-5 mr-2 text-rose-600 shrink-0" /> Areas for Improvement
+        {/* Areas to improve */}
+        <div
+          className="card p-5"
+          style={{ borderColor: "color-mix(in srgb, var(--err) 30%, transparent)" }}
+        >
+          <h3 className="flex items-center gap-2 text-sm font-semibold mb-3"
+            style={{ color: "var(--err)" }}>
+            <XCircle className="h-4 w-4 shrink-0" />
+            Areas to improve
           </h3>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {(evaluation.mistakes || []).map((s: string, i: number) => (
-              <li key={i} className="flex items-start">
-                <X className="h-4 w-4 text-rose-600 mr-2.5 mt-0.5 shrink-0" />
-                <span className="text-xs text-slate-700 leading-relaxed font-medium">{s}</span>
+              <li key={i} className="flex items-start gap-2">
+                <X className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "var(--err)" }} />
+                <span className="text-xs text-[var(--fg-secondary)] leading-relaxed">{s}</span>
               </li>
             ))}
           </ul>
         </div>
-      </div>
+      </motion.div>
 
+      {/* ── Missing concepts ── */}
       {evaluation.missingConcepts && evaluation.missingConcepts.length > 0 && (
-        <div className="rounded-3xl border border-amber-200/80 bg-amber-50/40 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-          <h3 className="flex items-center text-amber-800 font-bold text-base mb-4">
-            <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" /> Missing Concepts to Review
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.25 }}
+          className="card p-5"
+          style={{ borderColor: "color-mix(in srgb, var(--warn) 30%, transparent)" }}
+        >
+          <h3 className="flex items-center gap-2 text-sm font-semibold mb-3"
+            style={{ color: "var(--warn)" }}>
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            Concepts to review
           </h3>
-          <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-700 font-medium">
+          <ul className="flex flex-wrap gap-2">
             {evaluation.missingConcepts.map((s: string, i: number) => (
-              <li key={i}>{s}</li>
+              <li key={i}>
+                <span
+                  className="badge text-xs"
+                  style={{
+                    backgroundColor: "var(--accent-dim)",
+                    borderColor: "color-mix(in srgb, var(--accent) 25%, transparent)",
+                    color: "var(--accent-hover)",
+                  }}
+                >
+                  {s}
+                </span>
+              </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
 
-      <div className="rounded-3xl border border-primary/20 bg-primary/5 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-        <h3 className="flex items-center text-slate-900 font-bold text-base mb-3">
-          <Lightbulb className="h-5 w-5 mr-2 text-primary" /> Comprehensive AI Feedback
+      {/* ── AI Feedback ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="card p-6"
+      >
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--fg-primary)] mb-4">
+          <Lightbulb className="h-4 w-4 text-[var(--accent)]" />
+          AI Feedback
         </h3>
-        <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed font-normal">
+        <div className="prose-careeros text-sm">
           <ReactMarkdown>{evaluation.feedback}</ReactMarkdown>
         </div>
-      </div>
+      </motion.div>
 
+      {/* ── Model answers ── */}
       {(evaluation.correctAnswer || evaluation.optimizedAnswer) && (
-        <div className="grid md:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.35 }}
+          className="grid md:grid-cols-2 gap-4"
+        >
           {evaluation.correctAnswer && (
-            <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-              <h3 className="flex items-center text-slate-900 font-bold text-base mb-4">
-                <CheckCircle2 className="h-5 w-5 mr-2 text-emerald-600" /> Model Answer & Formulation
+            <div className="card p-5">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--fg-primary)] mb-3">
+                <CheckCircle2 className="h-4 w-4 text-[var(--ok)]" />
+                Model answer
               </h3>
-              <div className="prose prose-sm max-w-none max-h-96 overflow-y-auto text-slate-700">
+              <div className="prose-careeros text-xs max-h-80 overflow-y-auto">
                 <ReactMarkdown>{evaluation.correctAnswer}</ReactMarkdown>
               </div>
             </div>
           )}
-          
           {evaluation.optimizedAnswer && (
-            <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-              <h3 className="flex items-center text-slate-900 font-bold text-base mb-4">
-                <Lightbulb className="h-5 w-5 mr-2 text-primary" /> Optimized Architecture
+            <div className="card p-5">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--fg-primary)] mb-3">
+                <Lightbulb className="h-4 w-4 text-[var(--accent)]" />
+                Optimized approach
               </h3>
-              <div className="prose prose-sm max-w-none max-h-96 overflow-y-auto text-slate-700">
+              <div className="prose-careeros text-xs max-h-80 overflow-y-auto">
                 <ReactMarkdown>{evaluation.optimizedAnswer}</ReactMarkdown>
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
+      {/* ── Resources ── */}
       {evaluation.resources && evaluation.resources.length > 0 && (
-        <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-          <h3 className="flex items-center text-slate-900 font-bold text-base mb-4">
-            <BookOpen className="h-5 w-5 mr-2 text-teal-600" /> Recommended Study Material
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+          className="card p-5"
+        >
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--fg-primary)] mb-3">
+            <BookOpen className="h-4 w-4 text-[var(--ok)]" />
+            Recommended reading
           </h3>
-          <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-700 font-medium">
+          <ul className="space-y-1.5">
             {evaluation.resources.map((r: string, i: number) => (
-              <li key={i}>{r}</li>
+              <li key={i} className="text-xs text-[var(--fg-secondary)] flex items-start gap-2">
+                <span className="text-[var(--fg-muted)] shrink-0 mt-0.5">›</span>
+                {r}
+              </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
     </div>
   );

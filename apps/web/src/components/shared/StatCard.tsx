@@ -1,5 +1,4 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as motion from "framer-motion/client";
@@ -16,60 +15,104 @@ interface StatCardProps {
   };
   className?: string;
   delay?: number;
+  accentColor?: "accent" | "ok" | "err" | "muted";
 }
 
-export function StatCard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  description, 
+const ACCENT_MAP = {
+  accent: {
+    bg: "var(--accent-dim)",
+    border: "color-mix(in srgb, var(--accent) 25%, transparent)",
+    fg: "var(--accent-hover)",
+  },
+  ok: {
+    bg: "var(--ok-dim)",
+    border: "color-mix(in srgb, var(--ok) 25%, transparent)",
+    fg: "var(--ok)",
+  },
+  err: {
+    bg: "var(--err-dim)",
+    border: "color-mix(in srgb, var(--err) 25%, transparent)",
+    fg: "var(--err)",
+  },
+  muted: {
+    bg: "var(--bg-sunken)",
+    border: "var(--border)",
+    fg: "var(--fg-secondary)",
+  },
+};
+
+export function StatCard({
+  title,
+  value,
+  icon: Icon,
+  description,
   trend,
   className,
-  delay = 0
+  delay = 0,
+  accentColor = "accent",
 }: StatCardProps) {
+  const colors = ACCENT_MAP[accentColor];
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay }}
+      transition={{ duration: 0.3, delay }}
     >
-      <div className={cn(
-        "rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft",
-        "shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] hover:border-primary/30 hover:bg-white/95",
-        "transition-all duration-300 group hover:-translate-y-1 relative overflow-hidden",
-        className
-      )}>
-        {/* Subtle ambient gradient flare */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none group-hover:bg-primary/10 transition-all duration-500" />
-        
-        <div className="flex items-center justify-between pb-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            {title}
-          </p>
-          <div className="h-9 w-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/40 group-hover:bg-primary/20 transition-all duration-300 shadow-sm">
-            <Icon className="h-4 w-4 transition-colors" />
+      <div
+        className={cn(
+          "card card-interactive p-5 relative overflow-hidden",
+          className
+        )}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="eyebrow text-[var(--fg-muted)] mb-3">{title}</p>
+            <div
+              className="stat-number text-3xl font-medium text-[var(--fg-primary)] tabular-nums leading-none"
+            >
+              {value}
+            </div>
+
+            {(description || trend) && (
+              <div className="flex items-center gap-2 mt-2">
+                {trend && (
+                  <span
+                    className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                    style={{
+                      backgroundColor: trend.positive === true
+                        ? "var(--ok-dim)"
+                        : trend.positive === false
+                        ? "var(--err-dim)"
+                        : "var(--bg-sunken)",
+                      color: trend.positive === true
+                        ? "var(--ok)"
+                        : trend.positive === false
+                        ? "var(--err)"
+                        : "var(--fg-secondary)",
+                    }}
+                  >
+                    {trend.value > 0 ? "+" : ""}{trend.value}%
+                  </span>
+                )}
+                {description && (
+                  <span className="text-xs text-[var(--fg-muted)]">{description}</span>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-        
-        <div>
-          <div className="text-3xl font-black tracking-tight text-slate-900 tabular-nums">{value}</div>
-          
-          {(description || trend) && (
-            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5 font-medium">
-              {trend && (
-                <span className={cn(
-                  "font-bold px-1.5 py-0.5 rounded-full text-[11px]",
-                  trend.positive === true && "text-emerald-700 bg-emerald-50 border border-emerald-200",
-                  trend.positive === false && "text-rose-700 bg-rose-50 border border-rose-200",
-                  trend.positive === undefined && "text-slate-700 bg-slate-100"
-                )}>
-                  {trend.value > 0 ? "+" : ""}{trend.value}%
-                </span>
-              )}
-              {trend && <span className="text-slate-300">•</span>}
-              <span>{description}</span>
-            </p>
-          )}
+
+          {/* Icon — uses the colour accent system */}
+          <div
+            className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: colors.bg,
+              border: `1px solid ${colors.border}`,
+              color: colors.fg,
+            }}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
         </div>
       </div>
     </motion.div>

@@ -4,28 +4,23 @@ import { useAuthStore } from "../../store/auth.store";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
 import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 import Link from "next/link";
-import { 
-  FileText, 
-  Map, 
-  CalendarDays, 
-  ArrowRight, 
-  CheckCircle2, 
-  Dumbbell, 
-  Trophy, 
-  Flame, 
-  Star, 
-  BrainCircuit, 
+import {
+  FileText,
+  Map,
+  CalendarDays,
+  ArrowRight,
+  CheckCircle2,
+  Dumbbell,
+  Flame,
+  BrainCircuit,
   Target,
-  Sparkles,
   Zap,
   Clock,
-  Compass,
   Check,
-  ChevronRight,
   TrendingUp,
   Layers,
   Code2,
-  BookOpen
+  BarChart2,
 } from "lucide-react";
 import * as motion from "framer-motion/client";
 import { CircularProgress } from "@/components/ui/circular-progress";
@@ -33,10 +28,188 @@ import { SpinnerSkeleton } from "@/components/shared/LoadingSkeleton";
 import { SkillRadar } from "../../features/analytics/components/SkillRadar";
 import { useRoadmap } from "../../features/roadmap/hooks/useRoadmap";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
+/* ── Readiness Gauge — the signature element ── */
+function ReadinessGauge({ score }: { score: number }) {
+  const [displayed, setDisplayed] = useState(0);
+  const hiringBar = 85;
+  const gap = Math.max(0, hiringBar - score);
+
+  useEffect(() => {
+    let frame: number;
+    const start = performance.now();
+    const duration = 800;
+    const animate = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplayed(Math.round(eased * score));
+      if (t < 1) frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [score]);
+
+  return (
+    <div
+      className="card p-6 mb-6"
+      role="meter"
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Interview Readiness Score"
+    >
+      <div className="flex items-end justify-between mb-4">
+        <div>
+          <p className="eyebrow text-[var(--fg-muted)] mb-1">Interview Readiness</p>
+          <div className="flex items-baseline gap-2">
+            <span className="stat-number text-5xl font-medium text-[var(--fg-primary)]">
+              {displayed}<span className="text-2xl text-[var(--fg-muted)]">%</span>
+            </span>
+            {gap > 0 ? (
+              <span className="text-sm text-[var(--fg-muted)]">
+                {gap}pts to hiring bar
+              </span>
+            ) : (
+              <span className="text-sm text-[var(--ok)] font-medium">
+                Hiring bar reached ✓
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-semibold"
+          style={{ color: "var(--ok)" }}>
+          <TrendingUp className="h-3.5 w-3.5" />
+          Calibrated
+        </div>
+      </div>
+
+      {/* Gauge bar */}
+      <div className="gauge-track">
+        <div
+          className="gauge-fill"
+          style={{ width: `${score}%`, transition: "width 0.8s cubic-bezier(0.25,0.46,0.45,0.94)" }}
+        />
+        {/* Hiring bar marker */}
+        <div className="gauge-marker" style={{ left: `${hiringBar}%` }} />
+      </div>
+
+      <div className="flex justify-between mt-1.5">
+        <span className="text-xs text-[var(--fg-muted)]">0%</span>
+        <span
+          className="text-xs font-medium text-[var(--border-strong)] relative -translate-x-1/2"
+          style={{ left: `${hiringBar}%` }}
+        >
+          85% Hiring Bar
+        </span>
+        <span className="text-xs text-[var(--fg-muted)]">100%</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Journey step ── */
+type StepStatus = "complete" | "current" | "upcoming";
+interface JourneyStep {
+  id: number;
+  name: string;
+  status: StepStatus;
+  icon: React.ElementType;
+  href: string;
+}
+
+function JourneyStep({ step, isLast }: { step: JourneyStep; isLast: boolean }) {
+  const isLink = step.status !== "upcoming";
+
+  const inner = (
+    <div className="flex items-center gap-3 group">
+      {/* Step circle */}
+      <div
+        className={cn(
+          "h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-all duration-150",
+          step.status === "complete" && "border",
+          step.status === "current" && "shadow-sm",
+          step.status === "upcoming" && "border"
+        )}
+        style={{
+          backgroundColor:
+            step.status === "complete"
+              ? "var(--ok-dim)"
+              : step.status === "current"
+              ? "var(--accent)"
+              : "var(--bg-sunken)",
+          borderColor:
+            step.status === "complete"
+              ? "color-mix(in srgb, var(--ok) 25%, transparent)"
+              : step.status === "upcoming"
+              ? "var(--border)"
+              : "transparent",
+          color:
+            step.status === "complete"
+              ? "var(--ok)"
+              : step.status === "current"
+              ? "#ffffff"
+              : "var(--fg-muted)",
+        }}
+      >
+        {step.status === "complete" ? (
+          <Check className="h-4 w-4 stroke-[2.5]" />
+        ) : (
+          <step.icon className="h-4 w-4" />
+        )}
+      </div>
+
+      {/* Label */}
+      <div className="min-w-0">
+        <p
+          className={cn(
+            "text-sm font-medium leading-tight",
+            step.status === "complete" && "text-[var(--fg-secondary)]",
+            step.status === "current" && "text-[var(--fg-primary)]",
+            step.status === "upcoming" && "text-[var(--fg-muted)]"
+          )}
+        >
+          {step.name}
+        </p>
+        <p className="text-xs mt-0.5"
+          style={{
+            color:
+              step.status === "complete"
+                ? "var(--ok)"
+                : step.status === "current"
+                ? "var(--accent)"
+                : "var(--fg-muted)",
+          }}
+        >
+          {step.status === "complete" ? "Done" : step.status === "current" ? "In progress" : "Pending"}
+        </p>
+      </div>
+
+      {/* Connector */}
+      {!isLast && (
+        <div
+          className="flex-1 h-px mx-2"
+          style={{
+            backgroundColor:
+              step.status === "complete" ? "var(--ok)" : "var(--border)",
+          }}
+        />
+      )}
+    </div>
+  );
+
+  if (isLink) {
+    return <Link href={step.href} className="flex-1 min-w-0">{inner}</Link>;
+  }
+  return <div className="flex-1 min-w-0">{inner}</div>;
+}
+
+/* ════════════════════════════════════════
+   MAIN DASHBOARD
+   ════════════════════════════════════════ */
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
-  
+
   const { data: roadmapData, isLoading: isLoadingRoadmap } = useRoadmap();
   const hasRoadmap = !!roadmapData;
 
@@ -44,349 +217,205 @@ export default function DashboardPage() {
   const { data: dashboardStats, isLoading: isLoadingStats } = useDashboardAnalytics();
 
   if (isLoadingSession || isLoadingStats || isLoadingRoadmap) {
-    return (
-      <>
-        <SpinnerSkeleton />
-      </>
-    );
+    return <SpinnerSkeleton />;
   }
 
-  // Greeting calculation
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const displayName = user?.firstName || user?.email?.split('@')[0] || "Candidate";
+  const displayName = user?.firstName || user?.email?.split("@")[0] || "Candidate";
 
   // Roadmap metrics
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const totalTopics = roadmapData?.modules?.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0) || 24;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const completedTopics = roadmapData?.modules?.reduce((acc: number, m: any) => 
+  const completedTopics = roadmapData?.modules?.reduce((acc: number, m: any) =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    acc + (m.topics?.filter((t: any) => t.status === "COMPLETED").length || 0)
-  , 0) || 0;
-  const curriculumPercentage = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+    acc + (m.topics?.filter((t: any) => t.status === "COMPLETED").length || 0), 0) || 0;
+  const curriculumPct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-  // 7-day streak tracker (Monday = 0, Sunday = 6)
+  // Streak tracker
   const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const currentDayIndex = (new Date().getDay() + 6) % 7;
-  const streakCount = dashboardStats?.currentStreak || 1;
+  const streakCount = dashboardStats?.currentStreak || 0;
 
-  // 6-step guided roadmap journey
-  const steps = [
+  // Journey steps
+  const steps: JourneyStep[] = [
     { id: 1, name: "Upload Resume", status: user?.hasResume ? "complete" : "current", icon: FileText, href: "/resume" },
     { id: 2, name: "AI Analysis", status: user?.resumeStatus === "ANALYZED" ? "complete" : user?.hasResume ? "current" : "upcoming", icon: BrainCircuit, href: "/resume" },
-    { id: 3, name: "Curriculum Roadmap", status: hasRoadmap ? "complete" : user?.resumeStatus === "ANALYZED" ? "current" : "upcoming", icon: Map, href: "/roadmap" },
-    { id: 4, name: "Daily Study Session", status: todaySession?.status === "COMPLETED" ? "complete" : hasRoadmap ? "current" : "upcoming", icon: CalendarDays, href: "/today" },
-    { id: 5, name: "Interactive Practice", status: (dashboardStats?.practiceQuestions || 0) > 0 ? "complete" : "upcoming", icon: Dumbbell, href: "/practice" },
-    { id: 6, name: "Interview Readiness", status: (dashboardStats?.averageScore || 0) >= 80 ? "complete" : "upcoming", icon: Target, href: "#" },
+    { id: 3, name: "Roadmap", status: hasRoadmap ? "complete" : user?.resumeStatus === "ANALYZED" ? "current" : "upcoming", icon: Map, href: "/roadmap" },
+    { id: 4, name: "Daily Session", status: todaySession?.status === "COMPLETED" ? "complete" : hasRoadmap ? "current" : "upcoming", icon: CalendarDays, href: "/today" },
+    { id: 5, name: "Practice", status: (dashboardStats?.practiceQuestions || 0) > 0 ? "complete" : "upcoming", icon: Dumbbell, href: "/practice" },
+    { id: 6, name: "Readiness", status: (dashboardStats?.averageScore || 0) >= 80 ? "complete" : "upcoming", icon: Target, href: "#" },
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-      {/* 1. Hero Greeting Banner (AI Gorilla OS / TalentsPro Signature) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-2xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] relative overflow-hidden group">
-        {/* Ambient radial aurora blooms */}
-        <div className="absolute top-0 right-0 w-[32rem] h-[32rem] bg-gradient-to-br from-primary/10 via-purple-500/5 to-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-28 -mt-28" />
-        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl pointer-events-none -mb-28" />
+    <div className="space-y-6 pb-12">
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          <div className="space-y-4 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full shadow-sm">
-                <Sparkles className="h-3 w-3" />
-                Adaptive AI Engine Active
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                🎯 Target: {roadmapData?.targetRole || "Full Stack Engineer"}
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-                Level 1 Candidate
-              </span>
-            </div>
+      {/* ── 1. Readiness Gauge — signature element, always at top ── */}
+      <ReadinessGauge score={dashboardStats?.averageScore || 0} />
 
-            <div>
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 leading-tight">
-                {greeting}, {displayName}! 👋
-              </h1>
-              <p className="text-sm md:text-base text-slate-600 mt-2 leading-relaxed">
-                Your personalized interview preparation curriculum is calibrated and ready. Complete today&apos;s active modules to maintain your momentum.
-              </p>
-            </div>
-
-            {/* Gorilla OS Pill Action Row */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href={hasRoadmap ? "/today" : "/roadmap"}>
-                <button className="rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  {todaySession?.status === "COMPLETED" ? "Review Today's Session" : "Start Today's Session"}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </Link>
-              
-              <Link href="/practice">
-                <button className="rounded-full bg-white hover:bg-slate-50 text-slate-800 font-extrabold uppercase tracking-widest text-[11px] px-7 py-3.5 border border-slate-200/90 shadow-soft transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2">
-                  <Dumbbell className="h-4 w-4 text-teal-600" />
-                  Practice Questions
-                </button>
-              </Link>
-
-              <Link href="/roadmap">
-                <button className="rounded-full bg-transparent hover:bg-slate-100/60 text-slate-600 font-bold uppercase tracking-widest text-[10px] px-5 py-3 transition-colors flex items-center gap-1.5">
-                  <Map className="h-3.5 w-3.5 text-slate-500" />
-                  Full Curriculum
-                </button>
-              </Link>
-            </div>
+      {/* ── 2. Greeting + primary CTA ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="card p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+      >
+        <div>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span
+              className="badge"
+              style={{
+                backgroundColor: "var(--accent-dim)",
+                borderColor: "color-mix(in srgb, var(--accent) 25%, transparent)",
+                color: "var(--accent-hover)",
+              }}
+            >
+              <Zap className="h-3 w-3" />
+              Target: {roadmapData?.targetRole || "Full Stack Engineer"}
+            </span>
           </div>
-
-          {/* Right Side: Hero Visual Circular Metric Gauge */}
-          <div className="shrink-0 flex items-center justify-center lg:justify-end">
-            <div className="p-6 rounded-3xl border border-slate-200/90 bg-white/95 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] flex items-center gap-6 min-w-[280px]">
-              <CircularProgress 
-                value={dashboardStats?.averageScore || 0} 
-                size={88} 
-                strokeWidth={8} 
-                fontSize="text-2xl font-black text-slate-900"
-                strokeClassName="text-primary"
-              />
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-                  Interview Readiness
-                </span>
-                <p className="text-xl font-black text-slate-900 tracking-tight">
-                  {Math.round(dashboardStats?.averageScore || 0)}%
-                </p>
-                <div className="flex items-center gap-1.5 pt-1">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[11px] font-bold text-emerald-700">
-                    Target: 85% Benchmark
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. 6-step Guided User Flow (Mastery Journey) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-2xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 relative z-10">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
-              <Compass className="h-3 w-3" />
-              Onboarding & Curriculum Path
-            </p>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-1">Your Mastery Journey</h2>
-          </div>
-          <p className="text-xs text-slate-500 max-w-sm">
-            Step-by-step AI curriculum to reach 100% interview readiness.
+          <h1 className="text-2xl font-semibold text-[var(--fg-primary)] tracking-tight">
+            {greeting}, {displayName}.
+          </h1>
+          <p className="text-sm text-[var(--fg-secondary)] mt-1 max-w-lg">
+            {todaySession?.status === "COMPLETED"
+              ? "Today's session done — great consistency. Come back tomorrow."
+              : hasRoadmap
+              ? "Your session is ready. Complete it to keep your streak and readiness score moving."
+              : "Start by uploading your resume to generate your personalized curriculum."}
           </p>
         </div>
 
-        <div className="relative mt-8">
-          {/* Connector bar for desktop */}
-          <div className="hidden md:block absolute top-6 left-8 right-8 h-[2px] bg-slate-200 -translate-y-1/2 z-0">
-            <div 
-              className="h-full bg-gradient-to-r from-emerald-500 via-primary to-teal-500 transition-all duration-700 rounded-full"
-              style={{
-                width: `${
-                  (steps.filter(s => s.status === 'complete').length / (steps.length - 1)) * 100
-                }%`
-              }}
-            />
-          </div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative gap-6 md:gap-0">
-            {steps.map((step, idx) => (
-              <motion.div 
-                key={step.id} 
-                className="relative z-10 flex md:flex-col items-center gap-4 md:gap-2.5 w-full md:w-auto group"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.08 }}
-              >
-                <Link 
-                  href={step.status !== "upcoming" ? step.href : "#"} 
-                  className="flex md:flex-col items-center gap-3 md:gap-2.5 w-full group"
-                >
-                  <div className={cn(
-                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm",
-                    step.status === 'complete' && "bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm",
-                    step.status === 'current' && "bg-gradient-to-tr from-primary to-purple-600 text-white shadow-lg shadow-primary/30 ring-4 ring-primary/20 scale-105",
-                    step.status === 'upcoming' && "bg-slate-50 text-slate-400 border border-slate-200 group-hover:border-slate-300 group-hover:text-slate-700 group-hover:bg-slate-100"
-                  )}>
-                    {step.status === 'complete' ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : (
-                      <step.icon className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div className="text-left md:text-center">
-                    <p className={cn(
-                      "text-xs font-semibold tracking-tight transition-colors",
-                      step.status === 'complete' && "text-emerald-700 font-bold",
-                      step.status === 'current' && "text-slate-900 font-bold",
-                      step.status === 'upcoming' && "text-slate-500 group-hover:text-slate-800"
-                    )}>
-                      {step.name}
-                    </p>
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-0.5">
-                      {step.status === 'current' ? (
-                        <span className="text-primary font-bold">In Progress</span>
-                      ) : step.status === 'complete' ? (
-                        <span className="text-emerald-600 font-semibold">Completed</span>
-                      ) : (
-                        "Pending"
-                      )}
-                    </p>
-                  </div>
-                </Link>
-                {idx !== steps.length - 1 && (
-                  <div className={cn(
-                    "md:hidden absolute left-6 top-12 bottom-[-1.5rem] w-0.5",
-                    step.status === 'complete' ? "bg-emerald-500" : "bg-slate-200"
-                  )} />
-                )}
-              </motion.div>
-            ))}
-          </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link href={hasRoadmap ? "/today" : "/roadmap"}>
+            <button className="btn-primary px-6 py-2.5 text-sm">
+              {todaySession?.status === "COMPLETED" ? "Review session" : "Start session"}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </Link>
+          <Link href="/practice">
+            <button className="btn-ghost px-5 py-2.5 text-sm">
+              <Dumbbell className="h-3.5 w-3.5 text-[var(--fg-muted)]" />
+              Practice
+            </button>
+          </Link>
         </div>
-      </div>
+      </motion.div>
 
-      {/* 3. The 4 Gorilla-OS Visual Stat Cards (Multi-Metric Density) */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Interview Readiness Index */}
+      {/* ── 3. Journey steps ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.05 }}
+        className="card p-6"
+      >
+        <p className="eyebrow text-[var(--fg-muted)] mb-4">Your path</p>
+        <div className="flex items-start gap-0 overflow-x-auto pb-1">
+          {steps.map((step, idx) => (
+            <JourneyStep key={step.id} step={step} isLast={idx === steps.length - 1} />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── 4. Stat cards ── */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger">
+        {/* Readiness index */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05 }}
-          className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] hover:border-primary/30 transition-all duration-300 relative overflow-hidden group hover:-translate-y-1"
+          transition={{ duration: 0.3, delay: 0.08 }}
+          className="card card-interactive p-5"
         >
-          <div className="flex items-center justify-between pb-4">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-              Readiness Index
-            </span>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+          <div className="flex items-start justify-between mb-4">
+            <p className="eyebrow text-[var(--fg-muted)]">Readiness</p>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--accent-dim)", color: "var(--accent-hover)" }}>
               <BrainCircuit className="h-4 w-4" />
             </div>
           </div>
-          
-          <div className="flex items-center justify-between gap-4 my-2">
-            <div>
-              <div className="text-3xl font-black tracking-tight text-slate-900 tabular-nums">
-                {Math.round(dashboardStats?.averageScore || 0)}%
-              </div>
-              <p className="text-[11px] font-medium text-slate-500 mt-1">
-                Target: 85% hiring bar
-              </p>
-            </div>
-            <CircularProgress 
-              value={dashboardStats?.averageScore || 0}
-              size={56}
-              strokeWidth={6}
-              fontSize="text-xs font-black"
-              strokeClassName="text-primary"
-            />
+          <div className="stat-number text-3xl font-medium text-[var(--fg-primary)]">
+            {Math.round(dashboardStats?.averageScore || 0)}%
           </div>
-
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              <TrendingUp className="h-3 w-3" /> Calibrated
-            </span>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-              Algorithm V2
-            </span>
+          <p className="text-xs text-[var(--fg-muted)] mt-1">Target: 85% hiring bar</p>
+          <div className="mt-3 h-1 w-full rounded-full bg-[var(--bg-sunken)] overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${dashboardStats?.averageScore || 0}%`,
+                backgroundColor: "var(--accent)",
+                transition: "width 0.8s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }}
+            />
           </div>
         </motion.div>
 
-        {/* Card 2: Curriculum Topic Mastery */}
+        {/* Curriculum mastery */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1 }}
-          className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] hover:border-teal-500/30 transition-all duration-300 relative overflow-hidden group hover:-translate-y-1"
+          transition={{ duration: 0.3, delay: 0.12 }}
+          className="card card-interactive p-5"
         >
-          <div className="flex items-center justify-between pb-4">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-              Curriculum Mastery
-            </span>
-            <div className="h-8 w-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform">
+          <div className="flex items-start justify-between mb-4">
+            <p className="eyebrow text-[var(--fg-muted)]">Curriculum</p>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--ok-dim)", color: "var(--ok)" }}>
               <Layers className="h-4 w-4" />
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-4 my-2">
-            <div>
-              <div className="text-3xl font-black tracking-tight text-slate-900 tabular-nums">
-                {completedTopics}/{totalTopics}
-              </div>
-              <p className="text-[11px] font-medium text-slate-500 mt-1">
-                Topics mastered
-              </p>
-            </div>
-            <CircularProgress 
-              value={curriculumPercentage}
-              size={56}
-              strokeWidth={6}
-              fontSize="text-xs font-black"
-              strokeClassName="text-teal-600"
-            />
+          <div className="stat-number text-3xl font-medium text-[var(--fg-primary)]">
+            {completedTopics}
+            <span className="text-lg text-[var(--fg-muted)]">/{totalTopics}</span>
           </div>
-
-          <div className="pt-3 mt-3 border-t border-slate-100">
-            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${curriculumPercentage}%` }}
-              />
-            </div>
+          <p className="text-xs text-[var(--fg-muted)] mt-1">Topics mastered</p>
+          <div className="mt-3 h-1 w-full rounded-full bg-[var(--bg-sunken)] overflow-hidden">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${curriculumPct}%`,
+                backgroundColor: "var(--ok)",
+                transition: "width 0.8s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }}
+            />
           </div>
         </motion.div>
 
-        {/* Card 3: Consistency Streak & 7-Day Visual Tracker */}
+        {/* Streak */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15 }}
-          className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] hover:border-amber-500/30 transition-all duration-300 relative overflow-hidden group hover:-translate-y-1"
+          transition={{ duration: 0.3, delay: 0.16 }}
+          className="card card-interactive p-5"
         >
-          <div className="flex items-center justify-between pb-4">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-              Consistency Streak
-            </span>
-            <div className="h-8 w-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-              <Flame className="h-4 w-4" />
+          <div className="flex items-start justify-between mb-4">
+            <p className="eyebrow text-[var(--fg-muted)]">Streak</p>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--accent-dim)", color: "var(--accent-hover)" }}>
+              <Flame className="h-4 w-4" style={{ fill: "currentColor" }} />
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-2 my-2">
-            <div>
-              <div className="text-3xl font-black tracking-tight text-slate-900 tabular-nums flex items-center gap-1.5">
-                {dashboardStats?.currentStreak || 0}
-                <span className="text-sm font-bold text-slate-500">Days</span>
-                <span className="text-lg">🔥</span>
-              </div>
-              <p className="text-[11px] font-medium text-amber-600 mt-1">
-                +150 XP bonus unlocked
-              </p>
-            </div>
+          <div className="stat-number text-3xl font-medium text-[var(--fg-primary)] flex items-baseline gap-1.5">
+            {dashboardStats?.currentStreak || 0}
+            <span className="text-lg text-[var(--fg-muted)] font-normal">days</span>
           </div>
-
-          {/* 7-Day Mini Tracker Dots */}
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+          {/* 7-day dots */}
+          <div className="mt-3 flex items-center gap-1.5">
             {daysOfWeek.map((day, idx) => {
+              const isPast = idx <= currentDayIndex && idx >= currentDayIndex - streakCount + 1;
               const isToday = idx === currentDayIndex;
-              const isPastActive = idx <= currentDayIndex && idx >= currentDayIndex - streakCount + 1;
               return (
-                <div key={idx} className="flex flex-col items-center gap-1">
-                  <span className="text-[9px] font-extrabold uppercase text-slate-400">{day}</span>
-                  <div className={cn(
-                    "h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-all",
-                    isPastActive && "bg-amber-500 text-white shadow-sm shadow-amber-500/30",
-                    isToday && !isPastActive && "border-2 border-amber-500 text-amber-600 animate-pulse",
-                    !isPastActive && !isToday && "bg-slate-100 text-slate-400"
-                  )}>
-                    {isPastActive ? <Check className="h-2.5 w-2.5 stroke-[3]" /> : ""}
+                <div key={idx} className="flex flex-col items-center gap-0.5">
+                  <span className="text-[9px] font-bold text-[var(--fg-muted)] uppercase">{day}</span>
+                  <div
+                    className="h-4 w-4 rounded-full flex items-center justify-center"
+                    style={{
+                      backgroundColor: isPast ? "var(--accent)" : "var(--bg-sunken)",
+                      outline: isToday && !isPast ? "2px solid var(--accent)" : "none",
+                      outlineOffset: "1px",
+                    }}
+                  >
+                    {isPast && <Check className="h-2.5 w-2.5 text-white stroke-[3]" />}
                   </div>
                 </div>
               );
@@ -394,251 +423,238 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Card 4: Accuracy Balance (Coding vs Theory) */}
+        {/* Accuracy */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] hover:border-purple-500/30 transition-all duration-300 relative overflow-hidden group hover:-translate-y-1"
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="card card-interactive p-5"
         >
-          <div className="flex items-center justify-between pb-3">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-              Accuracy Balance
-            </span>
-            <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+          <div className="flex items-start justify-between mb-4">
+            <p className="eyebrow text-[var(--fg-muted)]">Accuracy</p>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--bg-sunken)", color: "var(--fg-secondary)" }}>
               <Code2 className="h-4 w-4" />
             </div>
           </div>
-
-          <div className="space-y-3 my-2">
+          <div className="space-y-2.5">
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1.5 text-[11px]">
-                  <span className="h-2 w-2 rounded-full bg-primary" /> Coding Problems
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[var(--fg-secondary)]">Coding</span>
+                <span className="stat-number font-medium text-[var(--fg-primary)]">
+                  {Math.round(dashboardStats?.codingAccuracy || 0)}%
                 </span>
-                <span className="font-extrabold text-slate-900">{Math.round(dashboardStats?.codingAccuracy || 0)}%</span>
               </div>
-              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: `${Math.round(dashboardStats?.codingAccuracy || 0)}%` }}
+              <div className="h-1 w-full rounded-full bg-[var(--bg-sunken)] overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${dashboardStats?.codingAccuracy || 0}%`,
+                    backgroundColor: "var(--accent)",
+                  }}
                 />
               </div>
             </div>
-
             <div>
-              <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                <span className="flex items-center gap-1.5 text-[11px]">
-                  <span className="h-2 w-2 rounded-full bg-teal-500" /> Theory & Arch
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[var(--fg-secondary)]">Theory</span>
+                <span className="stat-number font-medium text-[var(--fg-primary)]">
+                  {Math.round(dashboardStats?.theoryAccuracy || 0)}%
                 </span>
-                <span className="font-extrabold text-slate-900">{Math.round(dashboardStats?.theoryAccuracy || 0)}%</span>
               </div>
-              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-teal-500 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.round(dashboardStats?.theoryAccuracy || 0)}%` }}
+              <div className="h-1 w-full rounded-full bg-[var(--bg-sunken)] overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${dashboardStats?.theoryAccuracy || 0}%`,
+                    backgroundColor: "var(--ok)",
+                  }}
                 />
               </div>
             </div>
-          </div>
-
-          <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-              Balanced Profile
-            </span>
-            <span className="text-[11px] font-bold text-slate-600">
-              {dashboardStats?.practiceQuestions || 0} Solved
-            </span>
+            <p className="text-xs text-[var(--fg-muted)]">{dashboardStats?.practiceQuestions || 0} total answered</p>
           </div>
         </motion.div>
       </div>
 
-      {/* 4. Bottom Section: Today's Focus Session & Skill Radar */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Today's Focus Card */}
-          <div className="h-full rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-primary/10 transition-all duration-500" />
-            
+      {/* ── 5. Today's session + Skill radar ── */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
+        {/* Today session card */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.22 }}
+          className="lg:col-span-2 card p-6"
+        >
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-slate-200/80">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-primary flex items-center gap-1.5">
-                    <Zap className="h-3 w-3" />
-                    Daily Objective
-                  </p>
-                  <h3 className="text-xl font-bold text-slate-900 mt-1">Today&apos;s Study Session</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Custom algorithmically tailored modules for your target role.</p>
+              <p className="eyebrow text-[var(--fg-muted)] mb-1">Today</p>
+              <h2 className="text-base font-semibold text-[var(--fg-primary)]">Study Session</h2>
+            </div>
+            <div
+              className="h-9 w-9 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "var(--accent-dim)", color: "var(--accent-hover)" }}
+            >
+              <CalendarDays className="h-4 w-4" />
+            </div>
+          </div>
+
+          {todaySession ? (
+            <div className="space-y-5">
+              {/* Progress bar */}
+              <div>
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-[var(--fg-secondary)]">Session progress</span>
+                  <span className="stat-number font-medium text-[var(--fg-primary)]">
+                    {todaySession.status === "COMPLETED" ? "100%" : "33%"}
+                  </span>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
-                  <CalendarDays className="h-5 w-5" />
+                <div className="h-1.5 w-full rounded-full bg-[var(--bg-sunken)] overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: todaySession.status === "COMPLETED" ? "100%" : "33%",
+                      backgroundColor: "var(--accent)",
+                      transition: "width 0.6s cubic-bezier(0.25,0.46,0.45,0.94)",
+                    }}
+                  />
                 </div>
               </div>
 
-              {todaySession ? (
-                <div className="space-y-6 pt-6">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-2xl font-black text-slate-900">
-                        {todaySession.status === "COMPLETED" ? "Session Completed! 🎉" : "Active Focus Session"}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1 font-medium">
-                        Complete today&apos;s exercises to maintain your streak.
-                      </p>
-                    </div>
-                    <div className="text-right flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-50 border border-teal-200 text-teal-700">
-                        <Clock className="h-3 w-3" />
-                        60 mins
-                      </span>
-                    </div>
-                  </div>
+              {/* Session status */}
+              <div>
+                <p className="text-sm font-medium text-[var(--fg-primary)]">
+                  {todaySession.status === "COMPLETED" ? "Session complete — great work." : "Active session"}
+                </p>
+                <p className="text-xs text-[var(--fg-secondary)] mt-0.5 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {todaySession.status === "COMPLETED" ? "Completed today" : "~45 minutes remaining"}
+                </p>
+              </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs text-slate-500 font-medium">
-                      <span>Curriculum Progression</span>
-                      <span className="text-primary font-bold">
-                        {todaySession.status === "COMPLETED" ? "100%" : "33%"}
-                      </span>
-                    </div>
-                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary via-purple-500 to-teal-500 transition-all duration-500 rounded-full" 
-                        style={{ width: todaySession.status === "COMPLETED" ? "100%" : "33%" }} 
-                      />
-                    </div>
+              {/* Unit chips */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Unit 1", name: "Algorithms", time: "20 min", color: "var(--accent)" },
+                  { label: "Unit 2", name: "System Design", time: "25 min", color: "var(--ok)" },
+                  { label: "Unit 3", name: "Behavioural", time: "15 min", color: "var(--fg-muted)" },
+                ].map((unit) => (
+                  <div
+                    key={unit.label}
+                    className="rounded-lg p-3 border"
+                    style={{ borderColor: "var(--border)", backgroundColor: "var(--bg-sunken)" }}
+                  >
+                    <p className="text-xs font-bold mb-1" style={{ color: unit.color }}>{unit.label}</p>
+                    <p className="text-xs font-semibold text-[var(--fg-primary)]">{unit.name}</p>
+                    <p className="text-xs text-[var(--fg-muted)] mt-0.5">{unit.time}</p>
                   </div>
+                ))}
+              </div>
 
-                  {/* 3 Active Unit Highlights */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                    <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Unit 1</span>
-                      <p className="text-xs font-bold text-slate-900 mt-1">Algorithms & Structures</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">20 min practice</p>
-                    </div>
-                    <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-teal-600">Unit 2</span>
-                      <p className="text-xs font-bold text-slate-900 mt-1">System Architecture</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">25 min analysis</p>
-                    </div>
-                    <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600">Unit 3</span>
-                      <p className="text-xs font-bold text-slate-900 mt-1">Behavioral Flashcard</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">15 min review</p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Link href="/today" className="inline-block w-full sm:w-auto">
-                      <button className="w-full sm:w-auto rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
-                        {todaySession.status === "COMPLETED" ? "Review Completed Session" : "Continue Today's Session"}
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="h-16 w-16 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 text-slate-400 shadow-inner">
-                    <CalendarDays className="h-8 w-8 text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900">No Active Session Generated</h3>
-                  <p className="text-xs text-slate-500 max-w-sm mt-1.5 mb-6">
-                    {hasRoadmap 
-                      ? "Generate today's personalized study session to dive into curated practice questions."
-                      : "Upload your resume and generate a curriculum roadmap to unlock daily sessions."}
-                  </p>
-                  <Link href={hasRoadmap ? "/today" : "/roadmap"}>
-                    <button 
-                      disabled={!user?.hasResume}
-                      className="rounded-full bg-primary hover:bg-purple-600 disabled:opacity-50 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
-                    >
-                      {hasRoadmap ? "Start Today's Session" : "Go to Roadmap"}
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </Link>
-                </div>
-              )}
+              <Link href="/today" className="inline-block">
+                <button className="btn-primary px-6 py-2.5 text-sm">
+                  {todaySession.status === "COMPLETED" ? "Review session" : "Continue session"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </Link>
             </div>
-
-            {/* Bottom info banner */}
-            <div className="mt-8 pt-4 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1.5 text-slate-500 font-medium">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Adaptive AI Engine Active
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                TalentsPro Architecture
-              </span>
+          ) : (
+            <div className="flex flex-col items-center text-center py-8">
+              <div
+                className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
+                style={{ backgroundColor: "var(--bg-sunken)", color: "var(--fg-muted)" }}
+              >
+                <CalendarDays className="h-6 w-6" />
+              </div>
+              <p className="text-sm font-semibold text-[var(--fg-primary)] mb-1">No session yet</p>
+              <p className="text-xs text-[var(--fg-secondary)] max-w-xs mb-5">
+                {hasRoadmap
+                  ? "Generate today's session to get tailored practice questions."
+                  : "Upload your resume and generate a roadmap to unlock daily sessions."}
+              </p>
+              <Link href={hasRoadmap ? "/today" : "/roadmap"}>
+                <button className="btn-primary px-6 py-2.5 text-sm">
+                  {hasRoadmap ? "Start session" : "Go to roadmap"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </Link>
             </div>
-          </div>
-        </div>
+          )}
+        </motion.div>
 
-        <div className="flex flex-col gap-6">
-          {/* Skill Radar */}
+        {/* Skill Radar */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.26 }}
+        >
           <SkillRadar stats={dashboardStats} />
-
-          {/* Activity Milestones Card */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
-            <div className="mb-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Timeline</p>
-              <h3 className="text-lg font-bold text-slate-900 mt-1">Recent Activity</h3>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 backdrop-blur-md flex items-center justify-between hover:bg-slate-100/70 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-sm" />
-                  <div>
-                    <p className="text-xs font-bold text-slate-900">Candidate Onboarding</p>
-                    <p className="text-[10px] text-slate-500">Welcome to CareerOS!</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active</span>
-              </div>
-              
-              {user?.hasResume ? (
-                <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 backdrop-blur-md flex items-center justify-between hover:bg-slate-100/70 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm" />
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">Resume Analyzed</p>
-                      <p className="text-[10px] text-slate-500">Target role calibrated</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ready</span>
-                </div>
-              ) : (
-                <div className="p-3.5 rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                    <div>
-                      <p className="text-xs font-medium text-slate-600">Upload your resume</p>
-                      <p className="text-[10px] text-slate-400">Unlock custom roadmap</p>
-                    </div>
-                  </div>
-                  <Link href="/resume" className="text-[10px] font-bold text-primary hover:underline">
-                    Upload →
-                  </Link>
-                </div>
-              )}
-
-              {hasRoadmap && (
-                <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 backdrop-blur-md flex items-center justify-between hover:bg-slate-100/70 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-teal-500 shadow-sm" />
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">Roadmap Generated</p>
-                      <p className="text-[10px] text-slate-500">{roadmapData?.title || "Custom curriculum"}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* ── 6. Activity feed ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="card p-6"
+      >
+        <p className="eyebrow text-[var(--fg-muted)] mb-4">Recent activity</p>
+        <div className="space-y-2">
+          <ActivityRow
+            label="Onboarding"
+            detail="Welcome to CareerOS"
+            status="active"
+          />
+          {user?.hasResume && (
+            <ActivityRow
+              label="Resume analysed"
+              detail="Target role calibrated"
+              status="done"
+            />
+          )}
+          {hasRoadmap && (
+            <ActivityRow
+              label="Roadmap generated"
+              detail={roadmapData?.title || "Custom curriculum"}
+              status="done"
+            />
+          )}
+          {todaySession && (
+            <ActivityRow
+              label="Study session"
+              detail={todaySession.status === "COMPLETED" ? "Completed today" : "In progress"}
+              status={todaySession.status === "COMPLETED" ? "done" : "active"}
+            />
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function ActivityRow({
+  label,
+  detail,
+  status,
+}: {
+  label: string;
+  detail: string;
+  status: "done" | "active" | "pending";
+}) {
+  const dotColor =
+    status === "done" ? "var(--ok)" : status === "active" ? "var(--accent)" : "var(--border-strong)";
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[var(--bg-sunken)] transition-colors">
+      <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-[var(--fg-primary)]">{label}</p>
+        <p className="text-xs text-[var(--fg-muted)]">{detail}</p>
+      </div>
+      <span className="text-xs font-medium" style={{ color: dotColor }}>
+        {status === "done" ? "Done" : status === "active" ? "Active" : "Pending"}
+      </span>
     </div>
   );
 }

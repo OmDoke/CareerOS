@@ -10,6 +10,12 @@ interface QuestionCardProps {
   selectedOption?: string | null;
 }
 
+const DIFFICULTY_STYLES: Record<string, { bg: string; border: string; fg: string }> = {
+  Advanced:     { bg: "var(--err-dim)",    border: "color-mix(in srgb, var(--err) 25%, transparent)",  fg: "var(--err)" },
+  Intermediate: { bg: "var(--accent-dim)", border: "color-mix(in srgb, var(--accent) 25%, transparent)", fg: "var(--accent-hover)" },
+  Beginner:     { bg: "var(--ok-dim)",     border: "color-mix(in srgb, var(--ok) 25%, transparent)",   fg: "var(--ok)" },
+};
+
 export function QuestionCard({
   question,
   type,
@@ -19,55 +25,81 @@ export function QuestionCard({
   onOptionSelect,
   selectedOption,
 }: QuestionCardProps) {
+  const diffStyle = DIFFICULTY_STYLES[difficulty] ?? DIFFICULTY_STYLES.Beginner;
+
   return (
-    <div className="rounded-3xl border border-slate-200/80 p-6 md:p-8 bg-white/85 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] space-y-6 relative overflow-hidden">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
+    <div className="card p-6 space-y-5">
+      {/* Header badges */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className="badge"
+          style={{
+            backgroundColor: "var(--bg-sunken)",
+            borderColor: "var(--border)",
+            color: "var(--fg-secondary)",
+          }}
+        >
           {type}
         </span>
-        <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border ${
-          difficulty === "Advanced" ? "bg-rose-50 border-rose-200 text-rose-700" :
-          difficulty === "Intermediate" ? "bg-amber-50 border-amber-200 text-amber-700" :
-          "bg-emerald-50 border-emerald-200 text-emerald-700"
-        }`}>
+        <span
+          className="badge"
+          style={{
+            backgroundColor: diffStyle.bg,
+            borderColor: diffStyle.border,
+            color: diffStyle.fg,
+          }}
+        >
           {difficulty}
         </span>
       </div>
 
-      <div className="prose prose-sm md:prose-base max-w-none text-slate-900 leading-relaxed font-medium">
+      {/* Question text */}
+      <div className="prose-careeros text-sm font-medium">
         <ReactMarkdown>{question}</ReactMarkdown>
       </div>
 
+      {/* Code snippet */}
       {codeSnippet && (
-        <div className="mt-4">
-          <pre className="bg-slate-900 border border-slate-800 p-4 rounded-2xl overflow-x-auto text-sm font-mono text-emerald-300 shadow-inner">
-            <code>{codeSnippet}</code>
-          </pre>
+        <div className="code-block">
+          <code>{codeSnippet}</code>
         </div>
       )}
 
+      {/* MCQ options */}
       {options && options.length > 0 && (
-        <div className="mt-6 space-y-3">
-          {options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => onOptionSelect && onOptionSelect(option)}
-              className={`w-full text-left p-4 rounded-2xl border transition-all text-sm font-medium ${
-                selectedOption === option
-                  ? "border-primary bg-primary/10 text-primary shadow-sm ring-2 ring-primary/30 font-semibold"
-                  : "border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                  selectedOption === option ? "bg-primary text-white" : "bg-slate-100 text-slate-600 border border-slate-200"
-                }`}>
-                  {String.fromCharCode(65 + index)}
-                </span>
-                <span>{option}</span>
-              </div>
-            </button>
-          ))}
+        <div className="space-y-2">
+          {options.map((option, index) => {
+            const isSelected = selectedOption === option;
+            return (
+              <button
+                key={index}
+                onClick={() => onOptionSelect && onOptionSelect(option)}
+                className="w-full text-left p-3.5 rounded-lg border text-sm font-medium transition-all duration-150"
+                style={{
+                  backgroundColor: isSelected ? "var(--accent-dim)" : "var(--bg-surface)",
+                  borderColor: isSelected
+                    ? "color-mix(in srgb, var(--accent) 50%, transparent)"
+                    : "var(--border)",
+                  color: isSelected ? "var(--accent-hover)" : "var(--fg-primary)",
+                  boxShadow: isSelected ? "0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent)" : "none",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className="h-5 w-5 rounded flex items-center justify-center text-xs font-bold shrink-0"
+                    style={{
+                      backgroundColor: isSelected ? "var(--accent)" : "var(--bg-sunken)",
+                      color: isSelected ? "#fff" : "var(--fg-secondary)",
+                      border: isSelected ? "none" : "1px solid var(--border)",
+                    }}
+                  >
+                    {String.fromCharCode(65 + index)}
+                  </span>
+                  <span>{option}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

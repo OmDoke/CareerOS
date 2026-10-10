@@ -6,36 +6,65 @@ import { PublicLayout } from "../../../layouts/PublicLayout";
 export default function LoginPage() {
   return (
     <PublicLayout>
-      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden p-4 selection:bg-primary/20 selection:text-primary">
-        {/* Ambient Aurora Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-purple-200/40 blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-teal-100/50 blur-[130px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div
+        className="min-h-screen flex items-center justify-center p-4 relative"
+        style={{ backgroundColor: "var(--bg-base)" }}
+      >
+        {/* Single purposeful background texture — editorial dots pattern */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, var(--border) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            opacity: 0.5,
+          }}
+        />
 
-        <div className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-2xl p-8 md:p-10 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] relative z-10">
-          <div className="text-center mb-6">
-            <div className="h-16 w-16 rounded-3xl bg-white border border-slate-200/80 shadow-soft p-1.5 flex items-center justify-center mx-auto mb-3">
+        {/* Auth card — the ONE purposeful glass element */}
+        <div className="auth-card w-full max-w-sm p-8 relative z-10">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 mb-8">
+            <div
+              className="h-8 w-8 rounded-lg border p-0.5 flex items-center justify-center overflow-hidden"
+              style={{
+                backgroundColor: "var(--bg-surface)",
+                borderColor: "var(--border)",
+              }}
+            >
               <Image
                 src="/logo.png"
-                alt="CareerOS Logo"
-                width={64}
-                height={64}
+                alt="CareerOS"
+                width={32}
+                height={32}
                 className="w-full h-full object-contain"
                 priority
               />
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">Login to CareerOS</h1>
-            <p className="text-xs text-slate-500 mt-1">Enter your credentials to access your dashboard</p>
+            <span className="font-semibold text-sm text-[var(--fg-primary)]">CareerOS</span>
           </div>
-          
+
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-xl font-semibold text-[var(--fg-primary)] tracking-tight">
+              Sign in to your account
+            </h1>
+            <p className="text-xs text-[var(--fg-muted)] mt-1">
+              Pick up where you left off
+            </p>
+          </div>
+
           <LoginForm />
 
-          <div className="mt-6 text-center text-xs text-slate-500">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-teal-700 hover:underline font-bold transition-colors">
-              Create an account
+          <p className="mt-6 text-center text-xs text-[var(--fg-muted)]">
+            No account?{" "}
+            <Link
+              href="/register"
+              className="font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+            >
+              Create one — it&apos;s free
             </Link>
-          </div>
+          </p>
         </div>
       </div>
     </PublicLayout>
