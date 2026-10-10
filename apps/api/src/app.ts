@@ -28,7 +28,7 @@ app.use(helmet({
 app.use(cors({
   origin: env.FRONTEND_URL,
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "bypass-tunnel-reminder"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
 app.use(express.json());
