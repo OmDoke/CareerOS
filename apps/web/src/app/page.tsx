@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "../store/auth.store";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -44,12 +45,17 @@ export default function Home() {
       <header className="border-b border-slate-200/80 bg-white/80 backdrop-blur-2xl sticky top-0 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between max-w-6xl">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-primary via-purple-600 to-indigo-500 shadow-lg shadow-primary/30 flex items-center justify-center text-white font-black text-lg">
-              C
+            <div className="h-10 w-10 rounded-2xl bg-white border border-slate-200/80 shadow-soft p-1 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="CareerOS Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-slate-950 via-slate-800 to-slate-700 bg-clip-text text-transparent">CareerOS</span>
-            </div>
+            <span className="font-black text-xl tracking-tight text-slate-950">CareerOS</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-slate-900 transition-colors">
@@ -176,9 +182,15 @@ export default function Home() {
 
       <footer className="border-t border-slate-200/80 py-10 bg-white/70 backdrop-blur-md">
         <div className="container mx-auto px-6 max-w-6xl flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-primary flex items-center justify-center text-white font-black text-xs">
-              C
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-xl bg-white border border-slate-200/80 shadow-xs p-0.5 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="CareerOS Logo"
+                width={28}
+                height={28}
+                className="w-full h-full object-contain"
+              />
             </div>
             <span className="font-bold text-sm tracking-tight text-slate-900">CareerOS</span>
           </div>

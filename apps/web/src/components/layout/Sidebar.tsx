@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
@@ -41,15 +42,22 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] border-r border-slate-200/80 bg-white/80 backdrop-blur-2xl min-h-screen px-4 py-6 sticky top-0 h-screen overflow-y-auto z-30">
-      <div className="flex items-center gap-3 px-2 mb-8">
-        <div className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-primary via-purple-600 to-indigo-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/25">
-          C
+      <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8 group">
+        <div className="h-10 w-10 rounded-2xl bg-white border border-slate-200/80 shadow-soft p-1 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105">
+          <Image
+            src="/logo.png"
+            alt="CareerOS Logo"
+            width={40}
+            height={40}
+            className="w-full h-full object-contain"
+            priority
+          />
         </div>
         <div className="flex flex-col">
-          <span className="font-extrabold text-lg tracking-tight text-slate-900">CareerOS</span>
+          <span className="font-black text-lg tracking-tight text-slate-900 group-hover:text-primary transition-colors">CareerOS</span>
           <span className="text-[9px] font-bold uppercase tracking-widest text-primary">AI Career Engine</span>
         </div>
-      </div>
+      </Link>
 
       <nav className="flex-1 space-y-1.5">
         <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5 px-3">

@@ -1,5 +1,6 @@
 import { LoginForm } from "../../../features/auth/components/LoginForm";
 import Link from "next/link";
+import Image from "next/image";
 import { PublicLayout } from "../../../layouts/PublicLayout";
 
 export default function LoginPage() {
@@ -13,8 +14,15 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-2xl p-8 md:p-10 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] relative z-10">
           <div className="text-center mb-6">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-primary via-purple-600 to-indigo-500 shadow-lg shadow-primary/30 flex items-center justify-center text-white font-black text-lg mx-auto mb-3">
-              C
+            <div className="h-16 w-16 rounded-3xl bg-white border border-slate-200/80 shadow-soft p-1.5 flex items-center justify-center mx-auto mb-3">
+              <Image
+                src="/logo.png"
+                alt="CareerOS Logo"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900">Login to CareerOS</h1>
             <p className="text-xs text-slate-500 mt-1">Enter your credentials to access your dashboard</p>
