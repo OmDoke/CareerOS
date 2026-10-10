@@ -4,6 +4,9 @@ import { toast } from "sonner";
 
 export const api = axios.create({
   baseURL: process.env.CONFIG_API_URL || "http://localhost:3001/api/v1",
+  headers: {
+    "bypass-tunnel-reminder": "true", // Bypasses Cloudflare Quick Tunnel interstitial pages
+  },
 });
 
 api.interceptors.request.use((config) => {
