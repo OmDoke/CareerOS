@@ -20,27 +20,27 @@ export function QuestionCard({
   selectedOption,
 }: QuestionCardProps) {
   return (
-    <div className="rounded-3xl border border-white/10 p-6 md:p-8 bg-white/[0.035] backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] space-y-6 relative overflow-hidden">
+    <div className="rounded-3xl border border-slate-200/80 p-6 md:p-8 bg-white/85 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] space-y-6 relative overflow-hidden">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-accent bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
           {type}
         </span>
         <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider border ${
-          difficulty === "Advanced" ? "bg-rose-500/15 border-rose-500/30 text-rose-300" :
-          difficulty === "Intermediate" ? "bg-amber-500/15 border-amber-500/30 text-amber-300" :
-          "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+          difficulty === "Advanced" ? "bg-rose-50 border-rose-200 text-rose-700" :
+          difficulty === "Intermediate" ? "bg-amber-50 border-amber-200 text-amber-700" :
+          "bg-emerald-50 border-emerald-200 text-emerald-700"
         }`}>
           {difficulty}
         </span>
       </div>
 
-      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-white leading-relaxed">
+      <div className="prose prose-sm md:prose-base max-w-none text-slate-900 leading-relaxed font-medium">
         <ReactMarkdown>{question}</ReactMarkdown>
       </div>
 
       {codeSnippet && (
         <div className="mt-4">
-          <pre className="bg-white/[0.03] border border-white/10 p-4 rounded-2xl overflow-x-auto text-sm font-mono text-purple-200 shadow-inner">
+          <pre className="bg-slate-900 border border-slate-800 p-4 rounded-2xl overflow-x-auto text-sm font-mono text-emerald-300 shadow-inner">
             <code>{codeSnippet}</code>
           </pre>
         </div>
@@ -54,13 +54,13 @@ export function QuestionCard({
               onClick={() => onOptionSelect && onOptionSelect(option)}
               className={`w-full text-left p-4 rounded-2xl border transition-all text-sm font-medium ${
                 selectedOption === option
-                  ? "border-primary/60 bg-primary/20 text-white shadow-md shadow-primary/25 ring-2 ring-primary/40"
-                  : "border-white/10 bg-white/[0.03] text-slate-300 hover:bg-white/[0.06] hover:border-white/20"
+                  ? "border-primary bg-primary/10 text-primary shadow-sm ring-2 ring-primary/30 font-semibold"
+                  : "border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                  selectedOption === option ? "bg-primary text-white" : "bg-white/10 text-slate-400"
+                  selectedOption === option ? "bg-primary text-white" : "bg-slate-100 text-slate-600 border border-slate-200"
                 }`}>
                   {String.fromCharCode(65 + index)}
                 </span>

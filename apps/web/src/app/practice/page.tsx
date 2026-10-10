@@ -267,24 +267,24 @@ export default function PracticePage() {
             </div>
 
             {hint && (
-              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-6 mt-4">
-                <div className="flex items-center gap-2 mb-3 text-blue-700 dark:text-blue-400 font-semibold">
-                  <Lightbulb className="h-5 w-5" />
+              <div className="bg-sky-50 border border-sky-200 rounded-2xl p-6 mt-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3 text-sky-800 font-bold">
+                  <Lightbulb className="h-5 w-5 text-sky-600" />
                   <h3>AI Hint</h3>
                 </div>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-blue-900 dark:text-blue-200">
+                <div className="prose prose-sm max-w-none text-sky-950 font-medium">
                   <ReactMarkdown>{hint}</ReactMarkdown>
                 </div>
               </div>
             )}
 
             {explanation && (
-              <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900 rounded-lg p-6 mt-4">
-                <div className="flex items-center gap-2 mb-3 text-purple-700 dark:text-purple-400 font-semibold">
-                  <BookOpen className="h-5 w-5" />
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6 mt-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3 text-purple-800 font-bold">
+                  <BookOpen className="h-5 w-5 text-primary" />
                   <h3>Conceptual Explanation</h3>
                 </div>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-purple-900 dark:text-purple-200">
+                <div className="prose prose-sm max-w-none text-purple-950 font-medium">
                   <ReactMarkdown>{explanation}</ReactMarkdown>
                 </div>
               </div>

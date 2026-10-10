@@ -53,40 +53,40 @@ export const RegisterForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {errorMsg && (
-        <div className="text-rose-300 text-xs p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 font-medium">
+        <div className="text-rose-700 text-xs p-3 rounded-2xl bg-rose-50 border border-rose-200 font-medium">
           {errorMsg}
         </div>
       )}
       
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="firstName" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">First Name</Label>
+          <Label htmlFor="firstName" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">First Name</Label>
           <Input id="firstName" placeholder="Alex" {...formRegister("firstName")} />
-          {errors.firstName && <p className="text-rose-400 text-xs mt-1 ml-1">{errors.firstName.message}</p>}
+          {errors.firstName && <p className="text-rose-600 text-xs mt-1 ml-1 font-medium">{errors.firstName.message}</p>}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="lastName" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Last Name</Label>
+          <Label htmlFor="lastName" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Last Name</Label>
           <Input id="lastName" placeholder="Smith" {...formRegister("lastName")} />
-          {errors.lastName && <p className="text-rose-400 text-xs mt-1 ml-1">{errors.lastName.message}</p>}
+          {errors.lastName && <p className="text-rose-600 text-xs mt-1 ml-1 font-medium">{errors.lastName.message}</p>}
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Email Address</Label>
+        <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Email Address</Label>
         <Input id="email" type="email" placeholder="you@example.com" {...formRegister("email")} />
-        {errors.email && <p className="text-rose-400 text-xs mt-1 ml-1">{errors.email.message}</p>}
+        {errors.email && <p className="text-rose-600 text-xs mt-1 ml-1 font-medium">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Password</Label>
+        <Label htmlFor="password" className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Password</Label>
         <Input id="password" type="password" placeholder="At least 8 chars" {...formRegister("password")} />
-        {errors.password && <p className="text-rose-400 text-xs mt-1 ml-1">{errors.password.message}</p>}
+        {errors.password && <p className="text-rose-600 text-xs mt-1 ml-1 font-medium">{errors.password.message}</p>}
       </div>
 
       <div className="pt-2">
         <Button 
           type="submit" 
-          className="w-full rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] py-3.5 shadow-lg shadow-primary/30 border border-white/15 transition-all hover:scale-[1.01] active:scale-95" 
+          className="w-full rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.01] active:scale-95" 
           disabled={isSubmitting || registerMutation.isPending}
         >
           {isSubmitting || registerMutation.isPending ? "Creating Account..." : "Create Account"}

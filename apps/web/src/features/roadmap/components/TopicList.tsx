@@ -54,13 +54,13 @@ export function TopicList({ topics }: Props) {
                 const now = new Date();
                 const nextReview = topic.nextReviewDate ? new Date(topic.nextReviewDate) : null;
                 if (nextReview && nextReview <= now && topic.status !== "PENDING") {
-                  return <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">Review Due</span>;
+                  return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">Review Due</span>;
                 }
                 if (topic.masteryPercentage !== undefined && topic.masteryPercentage < 50 && topic.status !== "PENDING") {
-                  return <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800">Weak</span>;
+                  return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-200">Weak</span>;
                 }
                 if (topic.masteryPercentage !== undefined && topic.masteryPercentage >= 80 && topic.status !== "PENDING") {
-                  return <span className="text-[10px] font-medium px-1.5 py-0.5 rounded border bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">Strong</span>;
+                  return <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">Strong</span>;
                 }
                 return null;
               })()}

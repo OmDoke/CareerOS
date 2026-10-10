@@ -3,7 +3,6 @@
 import { useAuthStore } from "../../store/auth.store";
 import { useTodaySession } from "../../features/study-session/hooks/useStudySession";
 import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
-import { Progress } from "../../components/ui/progress";
 import Link from "next/link";
 import { 
   FileText, 
@@ -62,17 +61,17 @@ export default function DashboardPage() {
         title={`Welcome back, ${user?.firstName || user?.email?.split('@')[0] || "User"}!`}
         description="Here is your personalized interview preparation command center."
         action={
-          <div className="flex items-center gap-3 bg-white/[0.04] backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)]">
+          <div className="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-full border border-slate-200/80 shadow-soft">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
+              <div className="h-6 w-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                 <Trophy className="h-3.5 w-3.5" />
               </div>
-              <span className="font-extrabold text-xs uppercase tracking-wider text-white">Lvl 1</span>
+              <span className="font-extrabold text-xs uppercase tracking-wider text-slate-800">Lvl 1</span>
             </div>
-            <div className="w-px h-4 bg-white/15" />
+            <div className="w-px h-4 bg-slate-200" />
             <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-              <span className="font-bold text-xs text-amber-300">
+              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+              <span className="font-bold text-xs text-amber-600">
                 {dashboardStats?.currentStreak || 0} Day Streak 🔥
               </span>
             </div>
@@ -81,27 +80,27 @@ export default function DashboardPage() {
       />
 
       {/* 6-step Guided User Flow (Glassmorphism Journey) */}
-      <div className="rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-2xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] relative overflow-hidden">
+      <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-2xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] relative overflow-hidden">
         {/* Subtle radial ambient orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/15 via-accent/10 to-transparent rounded-full blur-3xl pointer-events-none -mr-24 -mt-24" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none -mb-20" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent rounded-full blur-3xl pointer-events-none -mr-24 -mt-24" />
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-accent/5 rounded-full blur-3xl pointer-events-none -mb-20" />
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 relative z-10">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent flex items-center gap-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
               <Sparkles className="h-3 w-3" />
               Career Roadmap
             </p>
-            <h2 className="text-xl font-bold tracking-tight text-white mt-1">Your Mastery Journey</h2>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-1">Your Mastery Journey</h2>
           </div>
-          <p className="text-xs text-slate-400 max-w-sm">
+          <p className="text-xs text-slate-500 max-w-sm">
             Step-by-step AI curriculum to reach 100% interview readiness.
           </p>
         </div>
 
         <div className="relative mt-8">
           {/* Connector bar for desktop */}
-          <div className="hidden md:block absolute top-6 left-8 right-8 h-[2px] bg-white/10 -translate-y-1/2 z-0">
+          <div className="hidden md:block absolute top-6 left-8 right-8 h-[2px] bg-slate-200 -translate-y-1/2 z-0">
             <div 
               className="h-full bg-gradient-to-r from-emerald-500 via-primary to-accent transition-all duration-700 rounded-full"
               style={{
@@ -126,10 +125,10 @@ export default function DashboardPage() {
                   className="flex md:flex-col items-center gap-3 md:gap-2.5 w-full group"
                 >
                   <div className={cn(
-                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-md",
-                    step.status === 'complete' && "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)]",
-                    step.status === 'current' && "bg-gradient-to-tr from-primary to-purple-600 text-white border-2 border-white/40 ring-4 ring-primary/25 shadow-[0_0_20px_rgba(124,58,237,0.45)] scale-105",
-                    step.status === 'upcoming' && "bg-white/[0.03] text-slate-500 border border-white/10 group-hover:border-white/25 group-hover:text-slate-300 group-hover:bg-white/[0.06]"
+                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm",
+                    step.status === 'complete' && "bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm",
+                    step.status === 'current' && "bg-gradient-to-tr from-primary to-purple-600 text-white shadow-lg shadow-primary/30 ring-4 ring-primary/20 scale-105",
+                    step.status === 'upcoming' && "bg-slate-50 text-slate-400 border border-slate-200 group-hover:border-slate-300 group-hover:text-slate-700 group-hover:bg-slate-100"
                   )}>
                     {step.status === 'complete' ? (
                       <CheckCircle2 className="h-5 w-5" />
@@ -140,17 +139,17 @@ export default function DashboardPage() {
                   <div className="text-left md:text-center">
                     <p className={cn(
                       "text-xs font-semibold tracking-tight transition-colors",
-                      step.status === 'complete' && "text-emerald-300",
-                      step.status === 'current' && "text-white font-bold",
-                      step.status === 'upcoming' && "text-slate-400 group-hover:text-slate-200"
+                      step.status === 'complete' && "text-emerald-700 font-bold",
+                      step.status === 'current' && "text-slate-900 font-bold",
+                      step.status === 'upcoming' && "text-slate-500 group-hover:text-slate-800"
                     )}>
                       {step.name}
                     </p>
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mt-0.5">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mt-0.5">
                       {step.status === 'current' ? (
                         <span className="text-primary font-bold">In Progress</span>
                       ) : step.status === 'complete' ? (
-                        <span className="text-emerald-400">Completed</span>
+                        <span className="text-emerald-600 font-semibold">Completed</span>
                       ) : (
                         "Pending"
                       )}
@@ -160,7 +159,7 @@ export default function DashboardPage() {
                 {idx !== steps.length - 1 && (
                   <div className={cn(
                     "md:hidden absolute left-6 top-12 bottom-[-1.5rem] w-0.5",
-                    step.status === 'complete' ? "bg-emerald-500" : "bg-white/10"
+                    step.status === 'complete' ? "bg-emerald-500" : "bg-slate-200"
                   )} />
                 )}
               </motion.div>
@@ -205,20 +204,20 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Today's Focus Card */}
-          <div className="h-full rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-primary/15 transition-all duration-500" />
+          <div className="h-full rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 md:p-8 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 group-hover:bg-primary/10 transition-all duration-500" />
             
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-white/10">
+              <div className="flex items-center justify-between pb-6 border-b border-slate-200/80">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-accent flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
                     <Zap className="h-3 w-3" />
                     Daily Objective
                   </p>
-                  <h3 className="text-xl font-bold text-white mt-1">Today&apos;s Study Session</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Custom algorithmically tailored modules for your target role.</p>
+                  <h3 className="text-xl font-bold text-slate-900 mt-1">Today&apos;s Study Session</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Custom algorithmically tailored modules for your target role.</p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary shadow-sm">
+                <div className="h-11 w-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
                   <CalendarDays className="h-5 w-5" />
                 </div>
               </div>
@@ -227,15 +226,15 @@ export default function DashboardPage() {
                 <div className="space-y-6 pt-6">
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-2xl font-black text-white">
+                      <p className="text-2xl font-black text-slate-900">
                         {todaySession.status === "COMPLETED" ? "Session Completed! 🎉" : "Active Focus Session"}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1 font-medium">
+                      <p className="text-xs text-slate-500 mt-1 font-medium">
                         Complete today&apos;s exercises to maintain your streak.
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-accent/15 border border-accent/25 text-accent">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-50 border border-teal-200 text-teal-700">
                         <Clock className="h-3 w-3" />
                         60 mins
                       </span>
@@ -243,13 +242,13 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs text-slate-400 font-medium">
+                    <div className="flex justify-between text-xs text-slate-500 font-medium">
                       <span>Progress</span>
                       <span className="text-accent font-bold">
                         {todaySession.status === "COMPLETED" ? "100%" : "33%"}
                       </span>
                     </div>
-                    <div className="h-2.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-primary via-purple-500 to-accent transition-all duration-500 rounded-full" 
                         style={{ width: todaySession.status === "COMPLETED" ? "100%" : "33%" }} 
@@ -259,7 +258,7 @@ export default function DashboardPage() {
 
                   <div className="pt-2">
                     <Link href="/today" className="inline-block w-full sm:w-auto">
-                      <button className="w-full sm:w-auto rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/30 border border-white/15 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                      <button className="w-full sm:w-auto rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
                         {todaySession.status === "COMPLETED" ? "Review Completed Session" : "Continue Today's Session"}
                         <ArrowRight className="h-4 w-4" />
                       </button>
@@ -268,11 +267,11 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="h-16 w-16 rounded-3xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-4 text-slate-400 shadow-inner">
+                  <div className="h-16 w-16 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4 text-slate-400 shadow-inner">
                     <CalendarDays className="h-8 w-8 text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-white">No Active Session</h3>
-                  <p className="text-xs text-slate-400 max-w-sm mt-1.5 mb-6">
+                  <h3 className="text-lg font-bold text-slate-900">No Active Session</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mt-1.5 mb-6">
                     {hasRoadmap 
                       ? "Generate today's personalized study session to dive into curated practice questions."
                       : "Upload your resume and generate a curriculum roadmap to unlock daily sessions."}
@@ -280,7 +279,7 @@ export default function DashboardPage() {
                   <Link href={hasRoadmap ? "/today" : "/roadmap"}>
                     <button 
                       disabled={!user?.hasResume}
-                      className="rounded-full bg-primary hover:bg-purple-600 disabled:opacity-50 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/30 border border-white/15 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+                      className="rounded-full bg-primary hover:bg-purple-600 disabled:opacity-50 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
                     >
                       {hasRoadmap ? "Start Today's Session" : "Go to Roadmap"}
                       <ArrowRight className="h-4 w-4" />
@@ -291,9 +290,9 @@ export default function DashboardPage() {
             </div>
 
             {/* Bottom info banner */}
-            <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="mt-8 pt-4 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-400">
+              <span className="flex items-center gap-1.5 text-slate-500">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 Adaptive AI Engine Active
               </span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -308,41 +307,41 @@ export default function DashboardPage() {
           <SkillRadar stats={dashboardStats} />
 
           {/* Activity Milestones Card */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-6 shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
             <div className="mb-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Timeline</p>
-              <h3 className="text-lg font-bold text-white mt-1">Recent Activity</h3>
+              <h3 className="text-lg font-bold text-slate-900 mt-1">Recent Activity</h3>
             </div>
             
             <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 backdrop-blur-md flex items-center justify-between hover:bg-slate-100/70 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(124,58,237,0.8)]" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-sm" />
                   <div>
-                    <p className="text-xs font-bold text-white">Account Created</p>
-                    <p className="text-[10px] text-slate-400">Welcome to CareerOS!</p>
+                    <p className="text-xs font-bold text-slate-900">Account Created</p>
+                    <p className="text-[10px] text-slate-500">Welcome to CareerOS!</p>
                   </div>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Today</span>
               </div>
               
               {user?.hasResume ? (
-                <div className="p-3.5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 backdrop-blur-md flex items-center justify-between hover:bg-slate-100/70 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-sm" />
                     <div>
-                      <p className="text-xs font-bold text-white">Resume Uploaded</p>
-                      <p className="text-[10px] text-slate-400">AI analysis ready</p>
+                      <p className="text-xs font-bold text-slate-900">Resume Uploaded</p>
+                      <p className="text-[10px] text-slate-500">AI analysis ready</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Today</span>
                 </div>
               ) : (
-                <div className="p-3.5 rounded-2xl border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-slate-600" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                     <div>
-                      <p className="text-xs font-medium text-slate-400">Upload your resume</p>
+                      <p className="text-xs font-medium text-slate-600">Upload your resume</p>
                       <p className="text-[10px] text-slate-400">To unlock custom roadmap</p>
                     </div>
                   </div>

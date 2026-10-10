@@ -11,16 +11,16 @@ export function AiListCard({ title, items, icon, colorClass }: Props) {
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="border rounded-lg p-6 bg-card">
+    <div className="rounded-3xl border border-slate-200/80 p-6 bg-white/85 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]">
       <div className="flex items-center gap-2 mb-4">
-        <div className={`p-2 rounded-full ${colorClass}`}>
+        <div className={`p-2 rounded-2xl ${colorClass}`}>
           {icon}
         </div>
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
       </div>
       <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+          <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
             <span className="mt-1 text-primary">•</span>
             <span>{item}</span>
           </li>
@@ -33,14 +33,14 @@ export function AiListCard({ title, items, icon, colorClass }: Props) {
 export function ResumeSummaryCard({ summary }: { summary?: string | null }) {
   if (!summary) return null;
   return (
-    <div className="border rounded-lg p-6 bg-card mb-6">
+    <div className="rounded-3xl border border-slate-200/80 p-6 bg-white/85 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] mb-6">
       <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+        <div className="p-2 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200">
           <FileText className="h-5 w-5" />
         </div>
-        <h3 className="text-lg font-semibold">AI Summary</h3>
+        <h3 className="text-lg font-bold text-slate-900">AI Summary</h3>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{summary}</p>
+      <p className="text-sm text-slate-600 leading-relaxed">{summary}</p>
     </div>
   );
 }
@@ -51,7 +51,7 @@ export function StrengthsCard({ strengths }: { strengths: string[] }) {
       title="Strengths" 
       items={strengths} 
       icon={<Target className="h-5 w-5" />} 
-      colorClass="bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
+      colorClass="bg-emerald-50 text-emerald-700 border border-emerald-200"
     />
   );
 }
@@ -62,7 +62,7 @@ export function WeaknessesCard({ weaknesses }: { weaknesses: string[] }) {
       title="Areas for Improvement" 
       items={weaknesses} 
       icon={<AlertTriangle className="h-5 w-5" />} 
-      colorClass="bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300"
+      colorClass="bg-rose-50 text-rose-700 border border-rose-200"
     />
   );
 }
@@ -73,7 +73,7 @@ export function SuggestedSkillsCard({ skills }: { skills: string[] }) {
       title="Suggested Skills" 
       items={skills} 
       icon={<Lightbulb className="h-5 w-5" />} 
-      colorClass="bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300"
+      colorClass="bg-amber-50 text-amber-700 border border-amber-200"
     />
   );
 }

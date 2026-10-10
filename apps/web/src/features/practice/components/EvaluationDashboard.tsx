@@ -50,7 +50,7 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center text-green-600 dark:text-green-500">
+            <CardTitle className="flex items-center text-emerald-600">
               <CheckCircle2 className="h-5 w-5 mr-2" /> What You Did Well
             </CardTitle>
           </CardHeader>
@@ -58,8 +58,8 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
             <ul className="space-y-2">
               {(evaluation.strengths || []).map((s: string, i: number) => (
                 <li key={i} className="flex items-start">
-                  <Check className="h-4 w-4 text-green-500 mr-2 mt-1 shrink-0" />
-                  <span className="text-sm">{s}</span>
+                  <Check className="h-4 w-4 text-emerald-500 mr-2 mt-1 shrink-0" />
+                  <span className="text-sm text-slate-700">{s}</span>
                 </li>
               ))}
             </ul>
@@ -68,7 +68,7 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center text-red-600 dark:text-red-500">
+            <CardTitle className="flex items-center text-rose-600">
               <XCircle className="h-5 w-5 mr-2" /> Areas for Improvement
             </CardTitle>
           </CardHeader>
@@ -76,8 +76,8 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
             <ul className="space-y-2">
               {(evaluation.mistakes || []).map((s: string, i: number) => (
                 <li key={i} className="flex items-start">
-                  <X className="h-4 w-4 text-red-500 mr-2 mt-1 shrink-0" />
-                  <span className="text-sm">{s}</span>
+                  <X className="h-4 w-4 text-rose-500 mr-2 mt-1 shrink-0" />
+                  <span className="text-sm text-slate-700">{s}</span>
                 </li>
               ))}
             </ul>
@@ -88,12 +88,12 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
       {evaluation.missingConcepts && evaluation.missingConcepts.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center text-amber-600 dark:text-amber-500">
+            <CardTitle className="flex items-center text-amber-600">
               <AlertTriangle className="h-5 w-5 mr-2" /> Missing Concepts
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
+            <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
               {evaluation.missingConcepts.map((s: string, i: number) => (
                 <li key={i}>{s}</li>
               ))}
@@ -104,11 +104,11 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
 
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-900">
             <Lightbulb className="h-5 w-5 mr-2 text-primary" /> Comprehensive Feedback
           </CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-sm dark:prose-invert max-w-none">
+        <CardContent className="prose prose-sm max-w-none text-slate-800">
           <ReactMarkdown>{evaluation.feedback}</ReactMarkdown>
         </CardContent>
       </Card>
@@ -118,11 +118,11 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
           {evaluation.correctAnswer && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" /> Ideal Answer / Correct Code
+                <CardTitle className="flex items-center text-slate-900">
+                  <CheckCircle2 className="h-5 w-5 mr-2 text-emerald-500" /> Ideal Answer / Correct Code
                 </CardTitle>
               </CardHeader>
-              <CardContent className="prose prose-sm dark:prose-invert max-w-none max-h-96 overflow-y-auto">
+              <CardContent className="prose prose-sm max-w-none max-h-96 overflow-y-auto text-slate-800">
                 <ReactMarkdown>{evaluation.correctAnswer}</ReactMarkdown>
               </CardContent>
             </Card>
@@ -131,11 +131,11 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
           {evaluation.optimizedAnswer && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-slate-900">
                   <Lightbulb className="h-5 w-5 mr-2 text-blue-500" /> Optimized Version
                 </CardTitle>
               </CardHeader>
-              <CardContent className="prose prose-sm dark:prose-invert max-w-none max-h-96 overflow-y-auto">
+              <CardContent className="prose prose-sm max-w-none max-h-96 overflow-y-auto text-slate-800">
                 <ReactMarkdown>{evaluation.optimizedAnswer}</ReactMarkdown>
               </CardContent>
             </Card>
@@ -146,12 +146,12 @@ export function EvaluationDashboard({ evaluation, onNextQuestion }: EvaluationDa
       {evaluation.resources && evaluation.resources.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center text-blue-600 dark:text-blue-400">
+            <CardTitle className="flex items-center text-blue-600">
               <BookOpen className="h-5 w-5 mr-2" /> Recommended Resources
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
+            <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700">
               {evaluation.resources.map((r: string, i: number) => (
                 <li key={i}>{r}</li>
               ))}

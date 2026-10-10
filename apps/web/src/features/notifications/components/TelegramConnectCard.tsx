@@ -86,8 +86,8 @@ export function TelegramConnectCard() {
             <div className="bg-success/10 border border-success/20 p-4 rounded-lg flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-success dark:text-green-400">Connected Successfully</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="font-semibold text-emerald-600">Connected Successfully</p>
+                <p className="text-sm text-slate-500 mt-1">
                   You are receiving notifications at @{status.username || "Telegram"}.
                 </p>
               </div>

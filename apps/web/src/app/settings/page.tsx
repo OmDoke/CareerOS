@@ -3,10 +3,9 @@
 import { useAuthStore } from "../../store/auth.store";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
-import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { Moon, Sun, Monitor, Save, User, Bell, LogOut, Bot } from "lucide-react";
+import { Sun, Monitor, Save, User, Bell, LogOut, Bot } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import * as motion from "framer-motion/client";
 import { TelegramConnectCard } from "../../features/notifications/components/TelegramConnectCard";
@@ -19,7 +18,6 @@ type TabType = "account" | "preferences" | "notifications" | "ai-provider";
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.clearAuth);
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("account");
 
@@ -151,38 +149,24 @@ export default function SettingsPage() {
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Appearance</CardTitle>
-                    <CardDescription>Customize how CareerOS looks on your device.</CardDescription>
+                    <CardTitle>Appearance & Theme</CardTitle>
+                    <CardDescription>CareerOS is configured with a Light-Mode Glassmorphism interface.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {mounted && (
-                      <div className="flex gap-4">
-                        <Button 
-                          variant={theme === "light" ? "default" : "outline"}
-                          onClick={() => setTheme("light")}
-                          className="flex-1"
-                        >
-                          <Sun className="mr-2 h-4 w-4" />
-                          Light
-                        </Button>
-                        <Button 
-                          variant={theme === "dark" ? "default" : "outline"}
-                          onClick={() => setTheme("dark")}
-                          className="flex-1"
-                        >
-                          <Moon className="mr-2 h-4 w-4" />
-                          Dark
-                        </Button>
-                        <Button 
-                          variant={theme === "system" ? "default" : "outline"}
-                          onClick={() => setTheme("system")}
-                          className="flex-1"
-                        >
-                          <Monitor className="mr-2 h-4 w-4" />
-                          System
-                        </Button>
+                    <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                          <Sun className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-slate-900">Light Glassmorphism (hexOS)</p>
+                          <p className="text-xs text-slate-500">Frosted white panels, brand violet accents, and high-contrast typography</p>
+                        </div>
                       </div>
-                    )}
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full">
+                        Active
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
