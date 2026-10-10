@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar } from "./Sidebar";
+
 import { TopNav } from "./TopNav";
 import { MobileNav } from "./MobileNav";
 import { usePathname, useRouter } from "next/navigation";
@@ -39,7 +39,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
       </div>
 
-      <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen pb-16 md:pb-0 relative max-w-full overflow-hidden">
         <TopNav />
         <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8">

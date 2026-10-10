@@ -9,14 +9,11 @@ import {
   Dumbbell, 
   Settings, 
   LogOut,
-  User,
   Briefcase,
   RefreshCw
 } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { cn } from "../../lib/utils";
-import { useRoadmap } from "../../features/roadmap/hooks/useRoadmap";
-import { useDashboardAnalytics } from "../../features/analytics/hooks/useAnalytics";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,11 +31,7 @@ const BOTTOM_NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.clearAuth);
-  
-  const { data: roadmapData } = useRoadmap();
-  const { data: dashboardStats } = useDashboardAnalytics();
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] border-r border-slate-200/80 bg-white/80 backdrop-blur-2xl min-h-screen px-4 py-6 sticky top-0 h-screen overflow-y-auto z-30">
@@ -82,46 +75,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-      
-      {user && (
-        <div className="mt-6 mb-4 p-4 rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-soft">
-          <div className="flex items-center gap-3 mb-3.5">
-            <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shadow-inner">
-              {user.firstName ? user.firstName[0].toUpperCase() : <User className="h-5 w-5" />}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold truncate text-slate-900">{user.firstName || "User"}</p>
-              <p className="text-xs text-slate-500 truncate">{user.email}</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-xs mb-1 font-medium">
-                <span className="text-slate-500">Target Role</span>
-                <span className="truncate ml-2 text-slate-900 font-semibold">{roadmapData?.targetRole || "Not set"}</span>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs mb-1 font-medium">
-                <span className="text-slate-500">Progress</span>
-                <span className="text-accent font-bold">{roadmapData ? "In Progress" : "0%"}</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 rounded-full" style={{ width: roadmapData ? "33%" : "0%" }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-medium">
-                <span className="text-slate-500">Daily Streak</span>
-                <span className="text-amber-600 font-bold flex items-center">
-                  🔥 {dashboardStats?.currentStreak || 0} days
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="space-y-1 pt-3 border-t border-slate-200/80">
         {BOTTOM_NAV_ITEMS.map((item) => {
