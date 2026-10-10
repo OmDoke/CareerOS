@@ -20,7 +20,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-card/80 backdrop-blur-md z-50 px-2 py-2 pb-safe">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-background/60 backdrop-blur-2xl z-50 px-2 py-2 pb-safe shadow-[0_-8px_32px_rgba(0,0,0,0.5)]">
       <div className="flex justify-around items-center">
         {MOBILE_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
@@ -29,14 +29,19 @@ export function MobileNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center p-2 min-w-[64px] rounded-lg transition-colors",
+                "flex flex-col items-center justify-center p-2 min-w-[64px] rounded-2xl transition-all",
                 isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-white font-bold"
+                  : "text-slate-400 hover:text-white"
               )}
             >
-              <item.icon className={cn("h-5 w-5 mb-1", isActive ? "stroke-[2.5px]" : "")} />
-              <span className="text-[10px] font-medium leading-none">{item.name}</span>
+              <div className={cn(
+                "p-1.5 rounded-xl transition-all",
+                isActive ? "bg-primary text-white shadow-md shadow-primary/30" : ""
+              )}>
+                <item.icon className={cn("h-4 w-4", isActive ? "stroke-[2.5px]" : "")} />
+              </div>
+              <span className="text-[10px] mt-1 font-semibold leading-none">{item.name}</span>
             </Link>
           );
         })}
@@ -44,14 +49,19 @@ export function MobileNav() {
         <Link
           href="/settings"
           className={cn(
-            "flex flex-col items-center justify-center p-2 min-w-[64px] rounded-lg transition-colors",
+            "flex flex-col items-center justify-center p-2 min-w-[64px] rounded-2xl transition-all",
             pathname === "/settings" || pathname === "/resume"
-              ? "text-primary"
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-white font-bold"
+              : "text-slate-400 hover:text-white"
           )}
         >
-          <Menu className={cn("h-5 w-5 mb-1", (pathname === "/settings" || pathname === "/resume") ? "stroke-[2.5px]" : "")} />
-          <span className="text-[10px] font-medium leading-none">More</span>
+          <div className={cn(
+            "p-1.5 rounded-xl transition-all",
+            (pathname === "/settings" || pathname === "/resume") ? "bg-primary text-white shadow-md shadow-primary/30" : ""
+          )}>
+            <Menu className={cn("h-4 w-4", (pathname === "/settings" || pathname === "/resume") ? "stroke-[2.5px]" : "")} />
+          </div>
+          <span className="text-[10px] mt-1 font-semibold leading-none">More</span>
         </Link>
       </div>
     </div>
