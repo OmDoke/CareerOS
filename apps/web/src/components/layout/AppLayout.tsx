@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
 import { MobileNav } from "./MobileNav";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -40,6 +41,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen pb-16 md:pb-0 relative max-w-full overflow-hidden">
+        <TopNav />
         <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div
@@ -56,7 +58,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <MobileNav />
-      <Toaster position="bottom-right" richColors theme="system" />
+      <Toaster position="bottom-right" richColors theme="light" />
     </div>
   );
 }

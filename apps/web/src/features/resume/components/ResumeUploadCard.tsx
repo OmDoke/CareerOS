@@ -72,10 +72,12 @@ export function ResumeUploadCard({ onSuccess }: Props) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-lg mx-auto">
       <div
-        className={`relative border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center transition-colors
-          ${dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 bg-background hover:bg-muted/50"}`}
+        className={`relative border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center transition-all backdrop-blur-xl shadow-soft
+          ${dragActive 
+            ? "border-primary bg-primary/10 scale-[1.01]" 
+            : "border-slate-300 bg-white/80 hover:bg-white hover:border-primary/40 shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)]"}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
@@ -87,42 +89,48 @@ export function ResumeUploadCard({ onSuccess }: Props) {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           onChange={handleChange}
         />
-        <div className="flex flex-col items-center gap-2 text-center pointer-events-none">
-          <UploadCloud className="h-10 w-10 text-muted-foreground" />
-          <h3 className="font-semibold text-lg">Upload your resume</h3>
-          <p className="text-sm text-muted-foreground">
-            Drag and drop your PDF here, or click to browse
+        <div className="flex flex-col items-center gap-3 text-center pointer-events-none">
+          <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
+            <UploadCloud className="h-8 w-8 text-primary" />
+          </div>
+          <h3 className="font-bold text-lg text-slate-900">Upload your resume</h3>
+          <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+            Drag and drop your PDF resume here, or click anywhere to select from your files
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Maximum size: 10MB</p>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full mt-1">
+            PDF only • Max 10MB
+          </span>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md flex items-center gap-2 text-sm">
-          <AlertCircle className="h-4 w-4" />
+        <div className="mt-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl flex items-center gap-2 text-xs font-semibold shadow-xs">
+          <AlertCircle className="h-4 w-4 shrink-0" />
           {errorMsg}
         </div>
       )}
 
       {selectedFile && (
-        <div className="mt-4 p-4 border rounded-md flex items-center justify-between bg-card">
+        <div className="mt-4 p-4 rounded-2xl border border-slate-200/90 bg-white/95 shadow-soft flex items-center justify-between">
           <div className="flex items-center gap-3 overflow-hidden">
-            <File className="h-8 w-8 text-blue-500 shrink-0" />
+            <div className="h-10 w-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shrink-0">
+              <File className="h-5 w-5" />
+            </div>
             <div className="truncate">
-              <p className="font-medium text-sm truncate">{selectedFile.name}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-bold text-xs text-slate-900 truncate">{selectedFile.name}</p>
+              <p className="text-[10px] font-medium text-slate-400">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
               </p>
             </div>
           </div>
           {uploadResume.isPending ? null : (
-            <Button
+            <button
               onClick={handleUpload}
               disabled={uploadResume.isPending}
-              size="sm"
+              className="rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[10px] px-6 py-2.5 shadow-md shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 shrink-0"
             >
-              Upload
-            </Button>
+              Analyze Resume
+            </button>
           )}
         </div>
       )}

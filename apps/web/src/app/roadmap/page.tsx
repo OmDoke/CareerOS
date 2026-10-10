@@ -139,19 +139,19 @@ export default function RoadmapPage() {
           estimatedWeeks={roadmap.estimatedWeeks}
         />
 
-        <div className="mb-8 p-6 border rounded-2xl bg-card shadow-sm flex flex-col sm:flex-row gap-6 items-center justify-between">
+        <div className="mb-8 p-6 md:p-8 rounded-3xl border border-slate-200/80 bg-white/85 backdrop-blur-xl shadow-soft shadow-[inset_0_1px_1px_0_rgba(255,255,255,1)] flex flex-col sm:flex-row gap-6 items-center justify-between">
           <div className="flex-1 w-full">
-            <div className="flex justify-between text-sm mb-2 font-medium">
-              <span>Overall Progress</span>
-              <span className="text-primary">{Math.round(progressPercentage)}%</span>
+            <div className="flex justify-between text-xs mb-2 font-bold uppercase tracking-wider text-slate-500">
+              <span>Overall Curriculum Progress</span>
+              <span className="text-primary font-black text-sm">{Math.round(progressPercentage)}%</span>
             </div>
             <ProgressBar progress={progressPercentage} className="h-3" />
           </div>
           <Link href="/today" className="w-full sm:w-auto shrink-0">
-            <Button size="lg" className="w-full sm:w-auto shadow-sm">
+            <button className="w-full sm:w-auto rounded-full bg-primary hover:bg-purple-600 text-white font-extrabold uppercase tracking-widest text-[11px] px-8 py-3.5 shadow-lg shadow-primary/25 border border-primary/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
               Continue Learning
-              <Route className="ml-2 h-4 w-4" />
-            </Button>
+              <Route className="h-4 w-4" />
+            </button>
           </Link>
         </div>
 
