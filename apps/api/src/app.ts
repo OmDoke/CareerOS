@@ -25,8 +25,22 @@ const app = express();
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: Origin '${origin}' not allowed`));
+    }
+  },
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "bypass-tunnel-reminder"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
